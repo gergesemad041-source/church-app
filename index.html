@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة إدارة الخدمة والافتقاد</title>
+    <title>منصة إدارة الخدمة والافتقاد الكنسي الشاملة</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Cairo Font -->
@@ -30,7 +30,7 @@
     <!-- Firebase Real-Time Cloud Sync (Project: church-service-app-289e2) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -49,7 +49,6 @@
 
         window.cloudConnected = false;
 
-        // دالة حفظ البيانات لحظياً على السحابة
         window.syncToCloud = async function() {
             localStorage.setItem('church_app_backup_v1', JSON.stringify(window.appData));
             const statusBadge = document.getElementById('cloud-sync-badge');
@@ -108,7 +107,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-black text-indigo-950">منصة إدارة الخدمة والافتقاد</h1>
-                <p class="text-xs text-slate-500 mt-1 font-semibold">نظام متابعة المخدومين والافتقاد والممارسات الروحية</p>
+                <p class="text-xs text-slate-500 mt-1 font-semibold">النظام السحابي المتكامل لمتابعة المخدومين والافتقاد والممارسات الروحية</p>
             </div>
             <div class="space-y-4 text-right">
                 <div>
@@ -141,16 +140,16 @@
                         <span id="cloud-sync-badge" class="text-[10px] text-amber-300 font-bold block">جاري الاتصال بالسحابة...</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5 sm:gap-2">
                     <button onclick="openQRScannerModal()" class="bg-amber-400 text-indigo-950 hover:bg-amber-300 px-3 py-2 rounded-xl text-xs font-black shadow flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-camera"></i>
-                        <span>مسح QR بالكاميرا</span>
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>ماسح الـ QR</span>
                     </button>
-                    <button onclick="openBulkWhatsAppModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition" title="رسائل واتساب جماعية">
+                    <button onclick="openBulkWhatsAppModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">
                         <i class="fa-brands fa-whatsapp text-sm"></i>
                         <span class="hidden sm:inline">واتساب جماعي</span>
                     </button>
-                    <button onclick="openReportModal()" class="bg-indigo-800 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition" title="سحب تقرير PDF">
+                    <button onclick="openReportModal()" class="bg-indigo-800 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">
                         <i class="fa-solid fa-file-pdf text-rose-300"></i>
                         <span class="hidden sm:inline">تقرير PDF</span>
                     </button>
@@ -165,12 +164,12 @@
         <div class="max-w-7xl w-full mx-auto px-4 pt-4 space-y-3">
             <!-- رادار التنبيهات الذكية (يظهر حسب الصلاحية) -->
             <div id="smart-alerts-banner" class="bg-white rounded-2xl p-4 shadow-sm border border-rose-200 hidden">
-                <div class="flex justify-between items-center mb-3">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
                     <h3 class="text-xs font-black text-rose-800 flex items-center gap-1.5">
                         <i class="fa-solid fa-bell text-rose-600 animate-bounce"></i>
-                        <span>رادار التنبيهات الذكية للمتابعة (حسب المدد المحددة)</span>
+                        <span>رادار التنبيهات الذكية للمتابعة (اضغط على أي مربع لعرض الأسماء فوراً)</span>
                     </h3>
-                    <button onclick="clearSmartFilter()" class="text-[11px] text-indigo-700 font-bold underline">عرض كل المخدومين</button>
+                    <button onclick="clearSmartFilter()" id="clear-smart-filter-btn" class="text-[11px] bg-indigo-50 text-indigo-800 px-3 py-1 rounded-lg font-extrabold hover:bg-indigo-100">عرض كل المخدومين</button>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                     <button onclick="applySmartFilter('absence')" class="p-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 transition">
@@ -192,17 +191,17 @@
                 </div>
             </div>
 
-            <!-- شريط أعياد الميلاد (باليوم أو بالشهر) -->
+            <!-- شريط أعياد الميلاد (باليوم أو الأسبوع أو بالشهر + إرسال تهنئة واتساب) -->
             <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-3.5 border border-amber-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div class="flex items-center gap-2 text-xs font-extrabold text-amber-950">
+                <div class="flex flex-wrap items-center gap-2 text-xs font-extrabold text-amber-950">
                     <i class="fa-solid fa-cake-candles text-amber-600 text-base"></i>
                     <span>أعياد الميلاد:</span>
-                    <select id="bday-filter-mode" onchange="renderBirthdaysBar()" class="px-2.5 py-1 rounded-lg border border-amber-300 bg-white text-xs font-bold">
-                        <option value="today">أعياد ميلاد اليوم</option>
+                    <select id="bday-filter-mode" onchange="renderBirthdaysBar()" class="px-2.5 py-1 rounded-lg border border-amber-300 bg-white text-xs font-bold outline-none">
+                        <option value="today">أعياد ميلاد اليوم 🎉</option>
                         <option value="days_7">خلال 7 أيام قادمة</option>
                         <option value="month">حسب الشهر الكامل</option>
                     </select>
-                    <select id="bday-month-select" onchange="renderBirthdaysBar()" class="px-2.5 py-1 rounded-lg border border-amber-300 bg-white text-xs font-bold hidden">
+                    <select id="bday-month-select" onchange="renderBirthdaysBar()" class="px-2.5 py-1 rounded-lg border border-amber-300 bg-white text-xs font-bold hidden outline-none">
                         <option value="1">شهر 1 (يناير)</option><option value="2">شهر 2 (فبراير)</option><option value="3">شهر 3 (مارس)</option>
                         <option value="4">شهر 4 (أبريل)</option><option value="5">شهر 5 (مايو)</option><option value="6">شهر 6 (يونيو)</option>
                         <option value="7">شهر 7 (يوليو)</option><option value="8">شهر 8 (أغسطس)</option><option value="9">شهر 9 (سبتمبر)</option>
@@ -221,39 +220,49 @@
                 <div class="bg-white rounded-3xl p-5 custom-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
                         <h2 class="text-lg font-black text-indigo-950">سجل وكروت المخدومين (<span id="total-makhdoom-count">0</span>)</h2>
-                        <p class="text-xs text-slate-500">إدارة شاملة لبيانات المخدومين، اللوكيشن، الـ QR Code، والممارسات الروحية</p>
+                        <p class="text-xs text-slate-500">إدارة شاملة لبيانات المخدومين، اللوكيشن، بطاقة الـ QR، التناول والاعتراف، وسجل الملاحظات التراكمي</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <button onclick="openAddMakhdoomModal()" class="bg-indigo-900 hover:bg-indigo-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow flex items-center gap-1.5">
-                            <i class="fa-solid fa-user-plus"></i> إضافة مخدوم
+                            <i class="fa-solid fa-user-plus"></i> إضافة مخدوم جديد
                         </button>
                         <button onclick="openExcelModal()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow flex items-center gap-1.5">
                             <i class="fa-solid fa-file-excel"></i> شيت الإكسيل الشامل
                         </button>
                         <button onclick="openCustomFieldsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2.5 rounded-xl text-xs flex items-center gap-1.5">
-                            <i class="fa-solid fa-sliders"></i> إضافة خانة جديدة
+                            <i class="fa-solid fa-sliders"></i> إضافة خانة مخصصة
                         </button>
                     </div>
                 </div>
 
-                <!-- شريط البحث المتقدم بكل السجلات -->
-                <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-2.5 items-center">
-                    <div class="relative flex-1 w-full">
+                <!-- شريط البحث والفلترة المتقدمة -->
+                <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+                    <div class="relative sm:col-span-5">
                         <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3 text-slate-400"></i>
-                        <input type="text" id="global-search-input" oninput="renderMakhdoomCards()" placeholder="اكتب للبحث الفوري..." class="w-full pr-10 pl-4 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <input type="text" id="global-search-input" oninput="renderMakhdoomCards()" placeholder="ابحث بالاسم، الكود، التليفون، العنوان، الملاحظات..." class="w-full pr-10 pl-4 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
-                    <div class="w-full sm:w-56">
+                    <div class="sm:col-span-3">
                         <select id="search-type-select" onchange="renderMakhdoomCards()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-slate-50 font-bold outline-none">
-                            <option value="all">🔍 بحث شامل في الكل</option>
-                            <option value="name">👤 بالاسم</option>
+                            <option value="all">🔍 بحث شامل في كل الخانات</option>
+                            <option value="name">👤 بالاسم أو الكود</option>
                             <option value="phone">📞 بالتليفون أو الواتساب</option>
                             <option value="address">🏠 بالعنوان</option>
                             <option value="class">🏫 بالفصل / المرحلة</option>
                             <option value="servant">🧑‍💼 بالخادم المسؤول</option>
                             <option value="confessor">⛪ بأب الاعتراف</option>
-                            <option value="efteqad_days">⏳ مدة تأخر الافتقاد (أكبر من X يوم)</option>
+                            <option value="efteqad_days">⏳ تأخر الافتقاد (أكبر من X يوم)</option>
                             <option value="notes">📝 بالملاحظات والتنبيهات</option>
                             <option value="custom">⚙️ بالخانات المخصصة</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <select id="filter-class-select" onchange="renderMakhdoomCards()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-slate-50 font-bold outline-none">
+                            <option value="">كل الفصول</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <select id="filter-servant-select" onchange="renderMakhdoomCards()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-slate-50 font-bold outline-none">
+                            <option value="">كل الخدام</option>
                         </select>
                     </div>
                 </div>
@@ -266,7 +275,7 @@
                 <div class="bg-white rounded-3xl p-5 custom-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
                         <h2 class="text-lg font-black text-indigo-950">القايمة الشاملة لأسماء وبيانات المخدومين</h2>
-                        <p class="text-xs text-slate-500">تخصيص الخادم المسؤول عن الأولاد وسحب القايمة PDF أو Excel</p>
+                        <p class="text-xs text-slate-500">توزيع المخدومين على الخدام، مراجعة الكشف الكامل، وسحب القايمة PDF أو Excel</p>
                     </div>
                     <div class="flex flex-wrap gap-2 items-center">
                         <select id="bulk-assign-servant-select" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold bg-slate-50"></select>
@@ -281,14 +290,16 @@
                             <tr class="bg-indigo-950 text-white">
                                 <th class="p-3 rounded-r-xl"><input type="checkbox" id="select-all-list" onchange="toggleSelectAllList(this.checked)"></th>
                                 <th class="p-3">#</th>
+                                <th class="p-3">الكود</th>
                                 <th class="p-3">اسم المخدوم</th>
                                 <th class="p-3">الفصل</th>
-                                <th class="p-3">التليفون / الواتساب</th>
+                                <th class="p-3">التليفون</th>
                                 <th class="p-3">العنوان</th>
                                 <th class="p-3">تاريخ الميلاد</th>
                                 <th class="p-3">الخادم المسؤول</th>
                                 <th class="p-3">آخر افتقاد</th>
-                                <th class="p-3 rounded-l-xl">إجراء</th>
+                                <th class="p-3">آخر تناول / اعتراف</th>
+                                <th class="p-3 rounded-l-xl">إجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="comprehensive-list-tbody" class="divide-y divide-slate-100"></tbody>
@@ -301,11 +312,12 @@
                 <div class="bg-white rounded-3xl p-5 custom-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
                         <h2 class="text-lg font-black text-indigo-950">تسجيل الغياب والحضور الأسبوعي</h2>
-                        <p class="text-xs text-slate-500">اختر تاريخ الاجتماع وسجل الحضور أو امسح كود الـ QR بالكاميرا لتسجيل الحضور الفوري</p>
+                        <p class="text-xs text-slate-500">اختر تاريخ الاجتماع وسجل الحضور يدوياً أو بمسح كود الـ QR بالكاميرا مع تسجيل أعذار الغياب</p>
                     </div>
                     <div class="flex flex-wrap gap-2 items-center">
                         <input type="date" id="attendance-date-picker" onchange="renderAttendanceTable()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold bg-slate-50">
-                        <button onclick="markAllAttendance('حاضر')" class="bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold">تحديد الكل حاضر</button>
+                        <button onclick="markAllAttendance('حاضر')" class="bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl text-xs font-bold">تحديد الكل حاضر ✅</button>
+                        <button onclick="markAllAttendance('غائب')" class="bg-rose-100 text-rose-800 px-3 py-2 rounded-xl text-xs font-bold">تحديد الكل غائب ❌</button>
                         <button onclick="saveAttendanceBatch()" class="bg-indigo-900 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow hover:bg-indigo-800">
                             حفظ كشف اليوم 💾
                         </button>
@@ -317,6 +329,7 @@
                             <tr class="bg-indigo-950 text-white">
                                 <th class="p-3 rounded-r-xl">اسم المخدوم</th>
                                 <th class="p-3">الفصل</th>
+                                <th class="p-3">مرات الغياب المتتالي</th>
                                 <th class="p-3 text-center">حاضر ✅</th>
                                 <th class="p-3 text-center">غائب ❌</th>
                                 <th class="p-3 rounded-l-xl">عذر الغياب / ملاحظة اليوم</th>
@@ -332,7 +345,7 @@
                 <div class="bg-white rounded-3xl p-5 custom-shadow border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div>
                         <h2 class="text-lg font-black text-indigo-950">متابعة الافتقاد والسجل التراكمي للملاحظات</h2>
-                        <p class="text-xs text-slate-500">يتم حفظ جميع الملاحظات الأسبوعية بالتاريخ واسم الخادم كتذكرة دائمة دون مسح أي ملاحظة سابقة</p>
+                        <p class="text-xs text-slate-500">يتم الاحتفاظ بكل الملاحظات الأسبوعية بالتاريخ واسم الخادم كتذكرة دائمة دون مسح أي ملاحظة قديمة</p>
                     </div>
                 </div>
                 <div id="efteqad-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -343,7 +356,7 @@
                 <div class="bg-white rounded-3xl p-5 custom-shadow border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div>
                         <h2 class="text-lg font-black text-indigo-950">مكتبة التحضير وتوزيع فقرات اليوم والحفلات</h2>
-                        <p class="text-xs text-slate-500">إضافة جدول فقرات اليوم (3 أو 5 فقرات أو حفلة) مع رفع ملفات PDF أو صوتيات أو روابط المراجع</p>
+                        <p class="text-xs text-slate-500">تنظيم فقرات اليوم (صلاة، ترانيم، ألعاب، درس، حفلة) مع رفع ملفات PDF أو صوتيات أو روابط المراجع</p>
                     </div>
                     <button onclick="openAddPrepModal()" class="bg-indigo-900 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow hover:bg-indigo-800">
                         <i class="fa-solid fa-plus ml-1"></i> إضافة تحضير / يوم جديد
@@ -357,13 +370,14 @@
                 <div class="bg-white rounded-3xl p-6 custom-shadow border border-slate-100 space-y-6">
                     <div>
                         <h2 class="text-lg font-black text-indigo-950">لوحة مسؤول البرنامج وإعدادات الخدام والتنبيهات</h2>
-                        <p class="text-xs text-slate-500">التحكم في حسابات الخدام (إيقاف مؤقت / تشغيل)، الصلاحيات، ومدد التنبيه الذكي</p>
+                        <p class="text-xs text-slate-500">التحكم الكامل في حسابات الخدام (إيقاف مؤقت / تشغيل)، تعديل الصلاحيات، وضبط مدد التنبيه الذكي</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- إضافة خادم -->
+                        <!-- إضافة أو تعديل خادم -->
                         <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
-                            <h3 class="font-extrabold text-indigo-950 text-sm">➕ إضافة خادم جديد وتحديد صلاحياته</h3>
+                            <h3 id="servant-form-title" class="font-extrabold text-indigo-950 text-sm">➕ إضافة خادم جديد وتحديد صلاحياته</h3>
+                            <input type="hidden" id="edit-servant-id">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                                 <input type="text" id="new-servant-name" placeholder="اسم الخادم" class="p-2.5 rounded-xl border border-slate-200 bg-white font-bold">
                                 <input type="text" id="new-servant-pass" placeholder="الرقم السري" class="p-2.5 rounded-xl border border-slate-200 bg-white">
@@ -374,7 +388,7 @@
                                 </select>
                             </div>
                             <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 text-xs">
-                                <div class="font-bold text-slate-700 mb-1">صلاحيات الخادم:</div>
+                                <div class="font-bold text-slate-700 mb-1">صلاحيات الخادم المسموح بها:</div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-alerts" checked class="accent-pink-600"> 🔔 رؤية التنبيهات الذكية</label>
                                     <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-delete" class="accent-indigo-900"> 🗑️ حذف مخدومين</label>
@@ -382,16 +396,19 @@
                                     <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-prep" checked class="accent-indigo-900"> 📖 إضافة وتعديل التحضير</label>
                                 </div>
                             </div>
-                            <button onclick="addNewServant()" class="w-full bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow">حفظ وإضافة الخادم</button>
+                            <div class="flex gap-2">
+                                <button onclick="saveServantForm()" class="flex-1 bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow">حفظ بيانات الخادم 💾</button>
+                                <button onclick="resetServantForm()" class="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold">تفريغ</button>
+                            </div>
                         </div>
 
                         <!-- إعدادات مدد التنبيه الذكي -->
                         <div class="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 space-y-3">
                             <h3 class="font-extrabold text-rose-950 text-sm">🔔 تحديد مدد التنبيه الذكي (بواسطة المسؤول)</h3>
-                            <p class="text-[11px] text-slate-600">حدد المدة لكل حالة؛ وعندما يتخطاها المخدوم سينبهك البرنامج تلقائياً:</p>
+                            <p class="text-[11px] text-slate-600">حدد المدة لكل حالة؛ وعندما يتخطاها المخدوم سينبهك البرنامج تلقائياً في الرادار العلوي:</p>
                             <div class="grid grid-cols-2 gap-3 text-xs">
                                 <div>
-                                    <label class="block font-bold text-slate-700 mb-1">الغياب المتتالي (عدد الاجتماعات):</label>
+                                    <label class="block font-bold text-slate-700 mb-1">الغياب المتتالي (اجتماعات):</label>
                                     <input type="number" id="alert-absence-limit" min="1" value="2" class="w-full p-2.5 bg-white rounded-xl border border-rose-200 font-bold">
                                 </div>
                                 <div>
@@ -421,9 +438,9 @@
                                         <th class="p-3">اسم الخادم</th>
                                         <th class="p-3">الرقم السري</th>
                                         <th class="p-3">الدور</th>
-                                        <th class="p-3">صلاحية التنبيهات الذكية</th>
+                                        <th class="p-3">الصلاحيات المفعلة</th>
                                         <th class="p-3">حالة الحساب</th>
-                                        <th class="p-3">إيقاف / تشغيل / حذف</th>
+                                        <th class="p-3">إجراءات التحكم</th>
                                     </tr>
                                 </thead>
                                 <tbody id="servants-list-tbody" class="divide-y divide-slate-100"></tbody>
@@ -460,7 +477,7 @@
         </nav>
     </div>
 
-    <!-- ================= النوافذ المنبثقة (Modals) ================= -->
+    <!-- ================= النوافذ المنبثقة الشاملة (Modals) ================= -->
 
     <!-- نافذة إضافة / تعديل مخدوم -->
     <div id="makhdoom-modal" class="fixed inset-0 bg-slate-950/75 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
@@ -491,13 +508,19 @@
                     <label class="block font-bold text-slate-700 mb-1">العنوان بالتفصيل:</label>
                     <input type="text" id="m-address" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50">
                 </div>
-                <div class="sm:col-span-2">
-                    <label class="block font-bold text-slate-700 mb-1">لوكيشن المنزل (GPS / رابط خرائط جوجل):</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="m-location" placeholder="اضغط زر التقاط اللوكيشن أو الصق رابط الخريطة..." class="flex-1 p-2.5 rounded-xl border border-slate-200 bg-slate-50">
-                        <button type="button" onclick="captureGPSLocation()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 shrink-0">
-                            <i class="fa-solid fa-location-crosshairs"></i> التقاط GPS الآن
+                <div class="sm:col-span-2 bg-emerald-50/60 p-3 rounded-2xl border border-emerald-200 space-y-2">
+                    <label class="block font-extrabold text-emerald-950">📍 لوكيشن المنزل (GPS / خرائط جوجل):</label>
+                    <input type="text" id="m-location" placeholder="رابط الموقع على الخريطة أو إحداثيات GPS..." class="w-full p-2.5 rounded-xl border border-emerald-200 bg-white">
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="captureGPSLocation()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl font-bold flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-crosshairs"></i> 1. التقاط موقعي الحالي بالـ GPS الآن
                         </button>
+                        <button type="button" onclick="convertAddressToMapLink()" class="bg-indigo-900 hover:bg-indigo-800 text-white px-3 py-2 rounded-xl font-bold flex items-center gap-1.5">
+                            <i class="fa-solid fa-map-location-dot"></i> 2. توليد اللوكيشن من العنوان المكتوب
+                        </button>
+                        <a href="https://www.google.com/maps" target="_blank" class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-xl font-bold flex items-center gap-1.5">
+                            <i class="fa-solid fa-up-right-from-square"></i> فتح خرائط جوجل
+                        </a>
                     </div>
                 </div>
                 <div class="sm:col-span-2">
@@ -531,8 +554,8 @@
                     <input type="date" id="m-confession" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50">
                 </div>
                 <div class="sm:col-span-2">
-                    <label class="block font-bold text-slate-700 mb-1">تنبيه أو ملاحظة أولية يكتبها الخادم:</label>
-                    <textarea id="m-initial-note" rows="2" placeholder="يتم إضافتها لسجل ملاحظات المخدوم..." class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50"></textarea>
+                    <label class="block font-bold text-slate-700 mb-1">إضافة تنبيه أو ملاحظة جديدة لسجل المخدوم:</label>
+                    <textarea id="m-initial-note" rows="2" placeholder="يتم إضافتها لسجل ملاحظات المخدوم مع الاحتفاظ بكل الملاحظات السابقة..." class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50"></textarea>
                 </div>
                 <!-- حاوية الخانات المخصصة الديناميكية -->
                 <div id="dynamic-custom-fields-inputs" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
@@ -549,32 +572,54 @@
         <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4">
             <h3 class="text-base font-black text-indigo-950">بطاقة QR Code للمخدوم</h3>
             <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col items-center space-y-2">
-                <canvas id="qr-card-canvas" width="280" height="340" class="rounded-xl shadow-sm bg-white"></canvas>
+                <canvas id="qr-card-canvas" width="280" height="350" class="rounded-xl shadow-sm bg-white"></canvas>
             </div>
             <div class="space-y-2">
-                <button onclick="sendQRCardToWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
-                    <i class="fa-brands fa-whatsapp text-base"></i> إرسال الكارت للمخدوم على الواتساب
+                <button onclick="sendQRCardToWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-base"></i> إرسال الكارت للمخدوم على الواتساب 💬
                 </button>
                 <button onclick="downloadQRCardImage()" class="w-full bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow">
-                    <i class="fa-solid fa-download ml-1"></i> تحميل صورة الكارت
+                    <i class="fa-solid fa-download ml-1"></i> تحميل صورة الكارت على الجهاز
                 </button>
             </div>
             <button onclick="closeModal('makhdoom-qr-card-modal')" class="text-slate-400 font-bold text-xs">إغلاق</button>
         </div>
     </div>
 
-    <!-- نافذة ماسح الكاميرا الحي للـ QR Code -->
-    <div id="qr-scanner-modal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 max-w-md w-full text-center space-y-4">
-            <h3 class="text-base font-black text-indigo-950">مسح كود الـ QR بالكاميرا</h3>
-            <p id="qr-scan-mode-hint" class="text-xs text-indigo-700 font-bold bg-indigo-50 p-2 rounded-xl"></p>
-            <div id="qr-reader" class="w-full rounded-2xl overflow-hidden border border-slate-200"></div>
-            <div class="flex gap-2">
-                <label class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs cursor-pointer">
-                    📸 أو التقط/ارفع صورة الكود
+    <!-- نافذة ماسح الكاميرا الشامل للـ QR Code (مع اختيار وضع المسح والبحث اليدوي) -->
+    <div id="qr-scanner-modal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full text-center space-y-4 my-8">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-base font-black text-indigo-950">ماسح الـ QR Code الذكي</h3>
+                <button onclick="stopQRScannerAndClose()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- اختيار الإجراء المطلوب عند مسح الكود -->
+            <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 text-xs space-y-1.5">
+                <div class="font-bold text-slate-700">اختر ماذا يحدث عند قراءة الكود:</div>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button type="button" onclick="setScannerActionMode('attendance')" id="scan-mode-btn-attendance" class="p-2 rounded-xl font-black bg-indigo-900 text-white">تسجيل حضور ✅</button>
+                    <button type="button" onclick="setScannerActionMode('efteqad')" id="scan-mode-btn-efteqad" class="p-2 rounded-xl font-bold bg-white border text-slate-700">تسجيل افتقاد 📋</button>
+                    <button type="button" onclick="setScannerActionMode('profile')" id="scan-mode-btn-profile" class="p-2 rounded-xl font-bold bg-white border text-slate-700">فتح الملف 👤</button>
+                </div>
+            </div>
+
+            <div id="qr-reader" class="w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 min-h-[220px] flex items-center justify-center text-white text-xs"></div>
+
+            <div class="grid grid-cols-1 gap-2">
+                <label class="w-full bg-amber-400 hover:bg-amber-300 text-indigo-950 font-black py-2.5 rounded-xl text-xs cursor-pointer shadow flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-camera"></i> 📸 تصوير الكود بكاميرا الموبايل أو رفع صورته
                     <input type="file" accept="image/*" capture="environment" onchange="scanQRFromImageFile(event)" class="hidden">
                 </label>
-                <button onclick="stopQRScannerAndClose()" class="bg-rose-100 text-rose-700 font-bold px-4 py-2.5 rounded-xl text-xs">إغلاق</button>
+            </div>
+
+            <!-- بحث يدوي سريع بالاسم أو الكود داخل الماسح -->
+            <div class="border-t pt-3 text-right space-y-2">
+                <label class="block text-xs font-bold text-slate-600">أو اكتب اسم المخدوم / الكود للتسجيل الفوري:</label>
+                <div class="flex gap-2">
+                    <input type="text" id="manual-qr-input" placeholder="اكتب اسم المخدوم أو الكود..." class="flex-1 p-2.5 rounded-xl border border-slate-200 text-xs font-bold bg-slate-50">
+                    <button onclick="triggerManualQRSearch()" class="bg-indigo-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold">تنفيذ ✓</button>
+                </div>
             </div>
         </div>
     </div>
@@ -622,7 +667,8 @@
     <!-- نافذة التحضير المتعدد الفقرات والملفات -->
     <div id="prep-modal" class="fixed inset-0 bg-slate-950/75 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl p-6 max-w-2xl w-full space-y-4 my-8 max-h-[92vh] overflow-y-auto">
-            <h3 class="text-base font-black text-indigo-950">إعداد تحضير اليوم وفقرات الخدمة والمرفقات</h3>
+            <h3 id="prep-modal-title" class="text-base font-black text-indigo-950">إعداد تحضير اليوم وفقرات الخدمة والمرفقات</h3>
+            <input type="hidden" id="edit-prep-id">
             <div class="space-y-3 text-xs">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -650,7 +696,7 @@
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">ملخص التحضير أو نقاط الدرس:</label>
+                    <label class="block font-bold text-slate-700 mb-1">ملخص التحضير أو نقاط الدرس والشرح:</label>
                     <textarea id="p-notes" rows="3" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50"></textarea>
                 </div>
                 <div>
@@ -669,7 +715,7 @@
         </div>
     </div>
 
-    <!-- نافذة استخراج ومعاينة تقارير الـ PDF المفصلة -->
+    <!-- نافذة استخراج ومعاينة تقارير الـ PDF المفصلة مع الفلترة -->
     <div id="report-modal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
         <div class="bg-white rounded-3xl p-5 max-w-5xl w-full space-y-4 my-6 max-h-[94vh] flex flex-col">
             <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
@@ -685,16 +731,35 @@
                 </div>
             </div>
 
-            <!-- خيارات أعمدة التقرير -->
-            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex flex-wrap gap-3 items-center text-xs">
-                <span class="font-black text-indigo-950">اختر الخانات الظاهرة بالتقرير:</span>
-                <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="phone" checked onchange="buildReportPreview()"> التليفون</label>
-                <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="class" checked onchange="buildReportPreview()"> الفصل</label>
-                <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="servant" checked onchange="buildReportPreview()"> الخادم المسؤول</label>
-                <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="bday" checked onchange="buildReportPreview()"> تاريخ الميلاد</label>
-                <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="spiritual" checked onchange="buildReportPreview()"> الاعتراف والتناول</label>
-                <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="efteqad" checked onchange="buildReportPreview()"> سجل الافتقاد</label>
-                <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="notes" checked onchange="buildReportPreview()"> ملاحظات وتنبيهات الخادم</label>
+            <!-- فلاتر التقرير + خيارات الأعمدة -->
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2.5 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <select id="rpt-filter-class" onchange="buildReportPreview()" class="p-2 rounded-xl border bg-white font-bold">
+                        <option value="">كل الفصول</option>
+                    </select>
+                    <select id="rpt-filter-servant" onchange="buildReportPreview()" class="p-2 rounded-xl border bg-white font-bold">
+                        <option value="">كل الخدام</option>
+                    </select>
+                    <select id="rpt-filter-alert" onchange="buildReportPreview()" class="p-2 rounded-xl border bg-white font-bold">
+                        <option value="">كل المخدومين</option>
+                        <option value="absence">المتغيبين بشكل متتالي فقط</option>
+                        <option value="efteqad">المتأخرين في الافتقاد فقط</option>
+                        <option value="communion">المتأخرين في التناول فقط</option>
+                        <option value="confession">المتأخرين في الاعتراف فقط</option>
+                    </select>
+                </div>
+                <div class="flex flex-wrap gap-3 items-center pt-1 border-t">
+                    <span class="font-black text-indigo-950">الأعمدة الظاهرة بالتقرير:</span>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="phone" checked onchange="buildReportPreview()"> التليفون</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="address" checked onchange="buildReportPreview()"> العنوان</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="class" checked onchange="buildReportPreview()"> الفصل</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="servant" checked onchange="buildReportPreview()"> الخادم المسؤول</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="bday" checked onchange="buildReportPreview()"> تاريخ الميلاد</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="spiritual" checked onchange="buildReportPreview()"> الاعتراف والتناول</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="efteqad" checked onchange="buildReportPreview()"> آخر افتقاد</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="custom" checked onchange="buildReportPreview()"> الخانات المخصصة</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" class="rpt-col accent-indigo-900" value="notes" checked onchange="buildReportPreview()"> سجل ملاحظات الخادم</label>
+                </div>
             </div>
 
             <!-- منطقة التقرير القابلة للطباعة والتحميل -->
@@ -708,7 +773,7 @@
     <div id="excel-modal" class="fixed inset-0 bg-slate-950/75 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 text-center">
             <h3 class="text-base font-black text-indigo-950">إدارة ملفات الإكسيل الشاملة</h3>
-            <p class="text-xs text-slate-500 leading-relaxed">النموذج يتضمن تلقائياً كل الخانات الأساسية + أي خانة جديدة أضفتها، وعند الرفع يمنع تكرار أي مخدوم مسجل مسبقاً أو مكرر داخل الشيت.</p>
+            <p class="text-xs text-slate-500 leading-relaxed">النموذج يتضمن تلقائياً كل الخانات الأساسية + أي خانة مخصصة أضفتها، وعند الرفع يمنع تكرار أي مخدوم مسجل مسبقاً أو مكرر داخل الشيت.</p>
             <div class="space-y-2.5 pt-2">
                 <button onclick="downloadExcelTemplate()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2">
                     <i class="fa-solid fa-file-arrow-down"></i> 1. تحميل نموذج Excel الفارغ الشامل
@@ -729,7 +794,7 @@
     <div id="custom-fields-modal" class="fixed inset-0 bg-slate-950/75 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4">
             <h3 class="text-base font-black text-indigo-950">إدارة الخانات الإضافية المخصصة</h3>
-            <p class="text-xs text-slate-500">أي خانة تضيفها هنا ستظهر في استمارة المخدوم، وفي البحث، وفي نموذج الإكسيل تلقائياً!</p>
+            <p class="text-xs text-slate-500">أي خانة تضيفها هنا ستظهر في كارت المخدوم، وفي البحث، وفي التقارير، وفي نموذج الإكسيل تلقائياً!</p>
             <div class="flex gap-2">
                 <input type="text" id="new-custom-field-name" placeholder="اسم الخانة (مثال: المدرسة / الموهبة)" class="flex-1 p-2.5 rounded-xl border border-slate-200 text-xs font-bold">
                 <button onclick="addCustomField()" class="bg-indigo-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold">إضافة</button>
@@ -739,27 +804,60 @@
         </div>
     </div>
 
-    <!-- نافذة الإرسال الجماعي للواتساب -->
+    <!-- نافذة الإرسال الجماعي المتقدم للواتساب (بالفلترة وتحديد الأسماء) -->
     <div id="bulk-whatsapp-modal" class="fixed inset-0 bg-slate-950/75 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl p-6 max-w-lg w-full space-y-4 my-8">
-            <h3 class="text-base font-black text-emerald-900 flex items-center gap-2">
-                <i class="fa-brands fa-whatsapp text-emerald-600 text-xl"></i>
-                <span>إرسال رسالة واتساب جماعية للمخدومين</span>
-            </h3>
-            <div class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">نص الرسالة (استخدم {الاسم} لوضع اسم كل مخدوم تلقائياً):</label>
-                    <textarea id="bulk-wa-msg" rows="3" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold">سلام ونعمة يا {الاسم} ❤️ نفتقدك جداً ومستنيينك في الاجتماع القادم!</textarea>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">بوابة الإرسال الخلفي الفوري (اختياري - Webhook/API URL لإرسال الكل في ثانية واحدة):</label>
-                    <input type="text" id="bulk-wa-api" placeholder="اتركه فارغاً للإرسال المباشر المتتابع عبر تطبيق واتساب" class="w-full p-2 rounded-xl border border-slate-200 bg-slate-50">
-                </div>
-                <button onclick="launchBulkWhatsAppAllAtOnce()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow text-xs">
-                    🚀 إرسال للكل الآن بضغطة واحدة
-                </button>
+        <div class="bg-white rounded-3xl p-6 max-w-2xl w-full space-y-4 my-8 max-h-[92vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-base font-black text-emerald-900 flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-emerald-600 text-xl"></i>
+                    <span>منصة رسائل الواتساب الجماعية للمخدومين</span>
+                </h3>
+                <button onclick="closeModal('bulk-whatsapp-modal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <button onclick="closeModal('bulk-whatsapp-modal')" class="w-full bg-slate-100 text-slate-600 py-2 rounded-xl font-bold text-xs">إغلاق</button>
+
+            <div class="space-y-3 text-xs overflow-y-auto pr-1">
+                <!-- فلترة المستلمين -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-slate-50 p-3 rounded-2xl border">
+                    <select id="wa-filter-group" onchange="renderBulkWhatsAppRecipients()" class="p-2 rounded-xl border bg-white font-bold">
+                        <option value="all">كل المخدومين</option>
+                        <option value="absence">المتغيبين مؤخراً</option>
+                        <option value="efteqad">المتأخرين في الافتقاد</option>
+                        <option value="bday_month">أعياد ميلاد هذا الشهر</option>
+                    </select>
+                    <select id="wa-filter-class" onchange="renderBulkWhatsAppRecipients()" class="p-2 rounded-xl border bg-white font-bold">
+                        <option value="">كل الفصول</option>
+                    </select>
+                    <select id="wa-filter-servant" onchange="renderBulkWhatsAppRecipients()" class="p-2 rounded-xl border bg-white font-bold">
+                        <option value="">كل الخدام</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">نص الرسالة الموحدة (استخدم {الاسم} لوضع اسم كل مخدوم تلقائياً):</label>
+                    <textarea id="bulk-wa-msg" rows="3" oninput="renderBulkWhatsAppRecipients()" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold">سلام ونعمة يا {الاسم} ❤️ نفتقدك جداً في أسرة الخدمة ومستنيينك تنورنا في الاجتماع القادم!</textarea>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">بوابة الإرسال الخلفي الفوري (اختياري - Webhook/API URL لإرسال الكل في الخلفية):</label>
+                    <input type="text" id="bulk-wa-api" placeholder="اتركه فارغاً للإرسال المباشر عبر واتساب الجهاز" class="w-full p-2 rounded-xl border border-slate-200 bg-slate-50">
+                </div>
+
+                <!-- قائمة الأسماء المحددة للإرسال -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-center">
+                        <span class="font-extrabold text-indigo-950">قائمة المستلمين (<span id="wa-recipients-count">0</span>):</span>
+                        <label class="flex items-center gap-1 font-bold"><input type="checkbox" checked onchange="toggleAllWARecipients(this.checked)"> تحديد/إلغاء الكل</label>
+                    </div>
+                    <div id="wa-recipients-list" class="max-h-48 overflow-y-auto space-y-1.5 border rounded-2xl p-2.5 bg-slate-50"></div>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2 border-t">
+                <button onclick="launchBulkWhatsAppAllAtOnce()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow text-xs">
+                    🚀 إرسال للمحددين الآن دفعة واحدة
+                </button>
+                <button onclick="closeModal('bulk-whatsapp-modal')" class="bg-slate-200 text-slate-700 px-4 py-3 rounded-xl font-bold text-xs">إغلاق</button>
+            </div>
         </div>
     </div>
 
@@ -780,8 +878,8 @@
         let activeSmartFilter = null;
         let currentQRTargetMakhdoom = null;
         let html5QrScanner = null;
+        let currentScannerActionMode = 'attendance';
 
-        // استرجاع النسخة المحلية مبدئياً حتى ترد السحابة
         const savedLocal = localStorage.getItem('church_app_backup_v1');
         if (savedLocal) {
             try { Object.assign(window.appData, JSON.parse(savedLocal)); } catch(e) {}
@@ -850,8 +948,6 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
             document.getElementById('current-user-display').innerText = `الخادم: ${servant.name}`;
-            
-            // إظهار أو إخفاء تبويب الإدارة حسب الصلاحية
             document.getElementById('nav-btn-admin').style.display = servant.role === 'admin' ? 'flex' : 'none';
             renderAllViews();
         }
@@ -881,7 +977,6 @@
             document.getElementById(id).classList.add('hidden');
         }
 
-        // دالة تنسيق التاريخ بالطريقة المصرية (يوم / شهر / سنة)
         function formatEgyptianDate(isoDate) {
             if (!isoDate) return '—';
             if (isoDate.includes('/')) return isoDate;
@@ -938,6 +1033,8 @@
             document.getElementById('lbl-com-limit').innerText = st.communionLimit;
             document.getElementById('lbl-cnf-limit').innerText = st.confessionLimit;
 
+            document.getElementById('alert-count-limit')?.setAttribute('value', st.absenceLimit);
+
             let cAbs = 0, cEft = 0, cCom = 0, cCnf = 0;
             window.appData.makhdoom.forEach(m => {
                 const al = getMakhdoomAlerts(m);
@@ -956,6 +1053,7 @@
             activeSmartFilter = type;
             switchTab('makhdoom');
             renderMakhdoomCards();
+            showToast('تمت فلترة الكروت حسب التنبيه المحدد');
         }
 
         function clearSmartFilter() {
@@ -992,12 +1090,38 @@
             if (matches.length === 0) {
                 listEl.innerHTML = '<span class="text-slate-400">لا توجد أعياد ميلاد في هذا النطاق</span>';
             } else {
-                listEl.innerHTML = matches.map(m => `<span class="bg-amber-200/80 text-amber-950 px-2.5 py-1 rounded-full">🎂 ${m.name} (${m.birthDate})</span>`).join('');
+                listEl.innerHTML = matches.map(m => {
+                    const phone = (m.phone || '').replace(/\D/g, '');
+                    const waLink = phone ? `https://wa.me/2${phone}?text=${encodeURIComponent('كل سنة وأنت طيب يا ' + m.name + ' 🎂🎉 وعقبال 100 سنة في حضن المسيح!')}` : '';
+                    return `<span class="bg-amber-200/80 text-amber-950 px-2.5 py-1 rounded-full flex items-center gap-1.5">🎂 ${m.name} (${m.birthDate}) ${waLink ? `<a href="${waLink}" target="_blank" class="text-emerald-700 hover:scale-110" title="إرسال تهنئة واتساب"><i class="fa-brands fa-whatsapp"></i></a>` : ''}</span>`;
+                }).join('');
             }
+        }
+
+        function populateFilterDropdowns() {
+            const classes = [...new Set(window.appData.makhdoom.map(m => m.class).filter(Boolean))];
+            const servants = window.appData.servants.map(s => s.name);
+
+            ['filter-class-select', 'rpt-filter-class', 'wa-filter-class'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const cur = el.value;
+                el.innerHTML = '<option value="">كل الفصول</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                el.value = cur;
+            });
+
+            ['filter-servant-select', 'rpt-filter-servant', 'wa-filter-servant'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const cur = el.value;
+                el.innerHTML = '<option value="">كل الخدام</option>' + servants.map(s => `<option value="${s}">${s}</option>`).join('');
+                el.value = cur;
+            });
         }
 
         function renderAllViews() {
             document.getElementById('total-makhdoom-count').innerText = window.appData.makhdoom.length;
+            populateFilterDropdowns();
             renderSmartAlertsBanner();
             renderBirthdaysBar();
             renderMakhdoomCards();
@@ -1032,8 +1156,9 @@
                 window.appData.customFields.push(val);
                 window.syncToCloud();
                 renderCustomFieldsList();
+                renderAllViews();
                 document.getElementById('new-custom-field-name').value = '';
-                showToast('تمت إضافة الخانة للنموذج والإكسيل');
+                showToast('تمت إضافة الخانة للكارت والنموذج والإكسيل');
             }
         }
 
@@ -1041,6 +1166,7 @@
             window.appData.customFields.splice(idx, 1);
             window.syncToCloud();
             renderCustomFieldsList();
+            renderAllViews();
         }
 
         // إضافة وتعديل المخدومين
@@ -1102,13 +1228,12 @@
             });
         }
 
-        // التقاط الـ GPS الحقيقي
         function captureGPSLocation() {
             if (!navigator.geolocation) {
                 alert('المتصفح لا يدعم الـ GPS');
                 return;
             }
-            showToast('جاري التقاط موقع الـ GPS...');
+            showToast('جاري التقاط إحداثيات الـ GPS...');
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const url = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
@@ -1116,16 +1241,27 @@
                     showToast('تم التقاط إحداثيات الـ GPS بنجاح 📍');
                 },
                 () => {
-                    const addr = document.getElementById('m-address').value.trim();
-                    if (addr) {
-                        document.getElementById('m-location').value = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
-                        showToast('تم توليد رابط الموقع من العنوان المكتوب');
-                    } else {
-                        alert('تأكد من السماح للمتصفح بالوصول للموقع (Allow Location) أو اكتب اسم الشارع في خانة العنوان واضغط مرة أخرى.');
-                    }
+                    alert('تأكد من السماح للمتصفح بالوصول للموقع (Allow Location) أو استخدم زر توليد اللوكيشن من العنوان.');
                 },
-                { enableHighAccuracy: true, timeout: 8000 }
+                { enableHighAccuracy: true, timeout: 10000 }
             );
+        }
+
+        function convertAddressToMapLink() {
+            const addr = document.getElementById('m-address').value.trim();
+            if (!addr) { alert('اكتب العنوان أولاً في خانة العنوان بالتفصيل'); return; }
+            document.getElementById('m-location').value = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+            showToast('تم توليد رابط الخريطة من العنوان بنجاح 📍');
+        }
+
+        function quickUpdateSpiritualDate(mId, field) {
+            const m = window.appData.makhdoom.find(x => x.id === mId);
+            if (!m) return;
+            const todayIso = new Date().toISOString().split('T')[0];
+            m[field] = todayIso;
+            window.syncToCloud();
+            renderAllViews();
+            showToast(field === 'communion' ? 'تم تحديث تاريخ التناول لليوم 🍞' : 'تم تحديث تاريخ الاعتراف لليوم ✝️');
         }
 
         function saveMakhdoomData() {
@@ -1134,7 +1270,6 @@
             const phone = document.getElementById('m-phone').value.trim();
             if (!name) { alert('يرجى إدخال اسم المخدوم'); return; }
 
-            // منع التكرار عند الإضافة الجديدة
             if (!editId) {
                 const dup = window.appData.makhdoom.some(m => m.name.trim() === name || (phone && m.phone.trim() === phone));
                 if (dup) {
@@ -1166,7 +1301,7 @@
             }
 
             const obj = {
-                id: editId || ('MK_' + Date.now()),
+                id: editId || ('MK_' + Date.now().toString().slice(-6)),
                 name,
                 class: document.getElementById('m-class').value.trim(),
                 phone,
@@ -1203,22 +1338,27 @@
             renderAllViews();
         }
 
-        // عرض الكروت والبحث المتقدم
+        // عرض الكروت والبحث المتقدم + إظهار الخانات المخصصة وأزرار التناول والاعتراف السريعة
         function renderMakhdoomCards() {
             const grid = document.getElementById('makhdoom-cards-grid');
             const query = (document.getElementById('global-search-input')?.value || '').trim().toLowerCase();
             const searchType = document.getElementById('search-type-select')?.value || 'all';
+            const filterClass = document.getElementById('filter-class-select')?.value || '';
+            const filterServant = document.getElementById('filter-servant-select')?.value || '';
 
             let list = window.appData.makhdoom.filter(m => {
                 if (activeSmartFilter) {
                     const al = getMakhdoomAlerts(m);
                     if (!al.some(a => a.type === activeSmartFilter)) return false;
                 }
+                if (filterClass && m.class !== filterClass) return false;
+                if (filterServant && m.servant !== filterServant) return false;
                 if (!query) return true;
+
                 const notesStr = (m.notesHistory || []).map(n => n.note).join(' ').toLowerCase();
                 const customStr = Object.values(m.customData || {}).join(' ').toLowerCase();
 
-                if (searchType === 'name') return (m.name || '').toLowerCase().includes(query);
+                if (searchType === 'name') return (m.name || '').toLowerCase().includes(query) || (m.id || '').toLowerCase().includes(query);
                 if (searchType === 'phone') return (m.phone || '').toLowerCase().includes(query);
                 if (searchType === 'address') return (m.address || '').toLowerCase().includes(query);
                 if (searchType === 'class') return (m.class || '').toLowerCase().includes(query);
@@ -1231,7 +1371,7 @@
                 if (searchType === 'notes') return notesStr.includes(query);
                 if (searchType === 'custom') return customStr.includes(query);
 
-                return [m.name, m.phone, m.address, m.class, m.servant, m.confessor, m.birthDate, notesStr, customStr].join(' ').toLowerCase().includes(query);
+                return [m.id, m.name, m.phone, m.address, m.class, m.servant, m.confessor, m.birthDate, notesStr, customStr].join(' ').toLowerCase().includes(query);
             });
 
             if (list.length === 0) {
@@ -1246,19 +1386,28 @@
                     ? m.notesHistory.slice().reverse().map(n => `<div class="text-[11px] bg-amber-50/80 p-1.5 rounded-lg border border-amber-200/60"><strong>${n.date} (${n.servant}):</strong> ${n.note}</div>`).join('')
                     : '<div class="text-[11px] text-slate-400">لا توجد ملاحظات مسجلة بعد</div>';
 
+                const customFieldsHtml = (window.appData.customFields || []).map(f => {
+                    const val = m.customData && m.customData[f];
+                    return val ? `<p><strong>🔹 ${f}:</strong> ${val}</p>` : '';
+                }).join('');
+
                 return `
                     <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between space-y-3">
                         <div class="space-y-2.5">
                             <div class="flex justify-between items-start gap-2">
                                 <div>
                                     <h3 class="font-black text-indigo-950 text-base">${m.name}</h3>
-                                    <span class="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">${m.class || 'بدون فصل'}</span>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">${m.class || 'بدون فصل'}</span>
+                                        <span class="text-[10px] text-slate-400 font-mono">${m.id}</span>
+                                    </div>
                                 </div>
                                 <div class="flex gap-1">
                                     <button onclick="openQRCardModal('${m.id}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-2.5 py-1.5 rounded-xl text-xs font-black" title="بطاقة QR">
                                         <i class="fa-solid fa-qrcode"></i> QR
                                     </button>
-                                    ${m.phone ? `<a href="https://wa.me/2${m.phone.replace(/\D/g,'')}" target="_blank" class="bg-emerald-100 text-emerald-700 px-2.5 py-1.5 rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+                                    ${m.phone ? `<a href="tel:${m.phone}" class="bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-xl text-xs font-bold" title="اتصال"><i class="fa-solid fa-phone"></i></a>` : ''}
+                                    ${m.phone ? `<a href="https://wa.me/2${m.phone.replace(/\D/g,'')}" target="_blank" class="bg-emerald-100 text-emerald-700 px-2.5 py-1.5 rounded-xl text-xs font-bold" title="واتساب"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
                                     ${m.location ? `<a href="${m.location}" target="_blank" class="bg-sky-100 text-sky-700 px-2.5 py-1.5 rounded-xl text-xs font-bold" title="فتح اللوكيشن"><i class="fa-solid fa-location-dot"></i></a>` : ''}
                                 </div>
                             </div>
@@ -1269,19 +1418,27 @@
                                 <p><strong>🧑‍💼 الخادم المسؤول:</strong> ${m.servant || '—'}</p>
                                 <p><strong>🎂 تاريخ الميلاد:</strong> ${m.birthDate || '—'}</p>
                                 <p><strong>⛪ أب الاعتراف:</strong> ${m.confessor || '—'}</p>
-                                <div class="grid grid-cols-3 gap-1 pt-1 text-[10px] border-t border-slate-200/70">
+                                ${customFieldsHtml}
+                                <div class="grid grid-cols-3 gap-1 pt-1.5 text-[10px] border-t border-slate-200/70">
                                     <span><strong>افتقاد:</strong> ${formatEgyptianDate(m.lastEfteqad)}</span>
                                     <span><strong>تناول:</strong> ${formatEgyptianDate(m.communion)}</span>
                                     <span><strong>اعتراف:</strong> ${formatEgyptianDate(m.confession)}</span>
                                 </div>
                             </div>
+
+                            <!-- أزرار سريعة لتسجيل تناول أو اعتراف اليوم -->
+                            <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                                <button onclick="quickUpdateSpiritualDate('${m.id}', 'communion')" class="bg-purple-50 hover:bg-purple-100 text-purple-800 py-1.5 rounded-xl font-bold border border-purple-200">🍞 تناول اليوم</button>
+                                <button onclick="quickUpdateSpiritualDate('${m.id}', 'confession')" class="bg-sky-50 hover:bg-sky-100 text-sky-800 py-1.5 rounded-xl font-bold border border-sky-200">✝️ اعترف اليوم</button>
+                            </div>
+
                             <div class="space-y-1">
                                 <div class="text-[11px] font-extrabold text-indigo-950">📋 سجل الملاحظات والتنبيهات (${(m.notesHistory || []).length}):</div>
                                 <div class="max-h-28 overflow-y-auto space-y-1 pr-1">${allNotesHtml}</div>
                             </div>
                         </div>
                         <div class="flex gap-1.5 pt-2 border-t border-slate-100">
-                            <button onclick="openEfteqadModal('${m.id}')" class="flex-1 bg-indigo-900 hover:bg-indigo-800 text-white py-2 rounded-xl text-xs font-bold">تسجيل افتقاد</button>
+                            <button onclick="openEfteqadModal('${m.id}')" class="flex-1 bg-indigo-900 hover:bg-indigo-800 text-white py-2 rounded-xl text-xs font-bold">تسجيل افتقاد 📋</button>
                             <button onclick="openEditMakhdoom('${m.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold">تعديل</button>
                             <button onclick="deleteMakhdoom('${m.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-2 rounded-xl text-xs font-bold"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -1298,6 +1455,7 @@
                 <tr class="hover:bg-slate-50">
                     <td class="p-3"><input type="checkbox" class="list-row-check" value="${m.id}"></td>
                     <td class="p-3 font-bold">${idx + 1}</td>
+                    <td class="p-3 font-mono text-[11px] text-slate-500">${m.id}</td>
                     <td class="p-3 font-black text-indigo-950">${m.name}</td>
                     <td class="p-3">${m.class || '—'}</td>
                     <td class="p-3">${m.phone || '—'}</td>
@@ -1310,7 +1468,9 @@
                         </select>
                     </td>
                     <td class="p-3">${formatEgyptianDate(m.lastEfteqad)}</td>
-                    <td class="p-3">
+                    <td class="p-3 text-[11px]">تناول: ${formatEgyptianDate(m.communion)}<br>اعتراف: ${formatEgyptianDate(m.confession)}</td>
+                    <td class="p-3 flex gap-2">
+                        <button onclick="openQRCardModal('${m.id}')" class="text-amber-700 font-bold">QR</button>
                         <button onclick="openEditMakhdoom('${m.id}')" class="text-indigo-700 font-bold hover:underline">تعديل</button>
                     </td>
                 </tr>
@@ -1349,10 +1509,12 @@
             const tbody = document.getElementById('attendance-tbody');
             tbody.innerHTML = window.appData.makhdoom.map(m => {
                 const rec = dayRecord[m.id] || { status: 'حاضر', excuse: '' };
+                const absCount = getConsecutiveAbsences(m.id);
                 return `
                     <tr>
                         <td class="p-3 font-black text-indigo-950">${m.name}</td>
                         <td class="p-3">${m.class || '—'}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${absCount > 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-50 text-emerald-700'}">${absCount} اجتماعات</span></td>
                         <td class="p-3 text-center"><input type="radio" name="att_${m.id}" value="حاضر" ${rec.status !== 'غائب' ? 'checked' : ''} class="w-4 h-4 accent-emerald-600"></td>
                         <td class="p-3 text-center"><input type="radio" name="att_${m.id}" value="غائب" ${rec.status === 'غائب' ? 'checked' : ''} class="w-4 h-4 accent-rose-600"></td>
                         <td class="p-3"><input type="text" id="excuse_${m.id}" value="${rec.excuse || ''}" placeholder="عذر الغياب أو ملاحظة..." class="w-full p-2 rounded-xl border border-slate-200 text-xs"></td>
@@ -1378,7 +1540,7 @@
                 window.appData.attendance[date][m.id] = { status: isAbsent ? 'غائب' : 'حاضر', excuse };
             });
             window.syncToCloud();
-            renderSmartAlertsBanner();
+            renderAllViews();
             showToast('تم حفظ الحضور والغياب سحابياً');
         }
 
@@ -1462,7 +1624,6 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // إطار علوي
             ctx.fillStyle = '#1e1b4b';
             ctx.fillRect(0, 0, canvas.width, 55);
             ctx.fillStyle = '#fbbf24';
@@ -1470,7 +1631,6 @@
             ctx.textAlign = 'center';
             ctx.fillText('بطاقة عضوية المخدوم', canvas.width / 2, 34);
 
-            // اسم المخدوم والفصل
             ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 17px Cairo, sans-serif';
             ctx.fillText(m.name, canvas.width / 2, 85);
@@ -1478,14 +1638,13 @@
             ctx.font = 'bold 12px Cairo, sans-serif';
             ctx.fillText(`${m.class || ''} | الكود: ${m.id}`, canvas.width / 2, 108);
 
-            // رسم صورة الـ QR
             const qrImg = new Image();
             qrImg.crossOrigin = 'anonymous';
             qrImg.onload = function() {
                 ctx.drawImage(qrImg, 50, 120, 180, 180);
                 ctx.fillStyle = '#64748b';
                 ctx.font = '11px Cairo, sans-serif';
-                ctx.fillText('امسح الكود لتسجيل الحضور أو الافتقاد', canvas.width / 2, 320);
+                ctx.fillText('امسح الكود لتسجيل الحضور أو الافتقاد', canvas.width / 2, 325);
             };
             qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(m.id)}`;
 
@@ -1505,17 +1664,22 @@
             downloadQRCardImage();
             const phone = (currentQRTargetMakhdoom.phone || '').replace(/\D/g, '');
             const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentQRTargetMakhdoom.id)}`;
-            const msg = `سلام ونعمة يا ${currentQRTargetMakhdoom.name} ❤️\nهذا هو كود الـ QR الخاص بك في الخدمة:\nالكود: ${currentQRTargetMakhdoom.id}\nرابط صورة الكود: ${qrLink}`;
+            const msg = `سلام ونعمة يا ${currentQRTargetMakhdoom.name} ❤️\nهذه بطاقة الـ QR الخاصة بك في الخدمة:\nالكود: ${currentQRTargetMakhdoom.id}\nرابط صورة الكود المباشر: ${qrLink}`;
             window.open(`https://wa.me/${phone ? '2' + phone : ''}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // ماسح الكاميرا الذكي حسب الصفحة المفتوحة
+        function setScannerActionMode(mode) {
+            currentScannerActionMode = mode;
+            ['attendance', 'efteqad', 'profile'].forEach(m => {
+                const btn = document.getElementById(`scan-mode-btn-${m}`);
+                if (btn) btn.className = m === mode ? 'p-2 rounded-xl font-black bg-indigo-900 text-white' : 'p-2 rounded-xl font-bold bg-white border text-slate-700';
+            });
+        }
+
         function openQRScannerModal() {
             const activeTab = document.querySelector('.tab-content.active')?.id || 'tab-makhdoom';
-            const hintEl = document.getElementById('qr-scan-mode-hint');
-            if (activeTab === 'tab-attendance') hintEl.innerText = 'وضع الغياب والحضور: مسح الكود سيسجل المخدوم (حاضر ✅) فوراً!';
-            else if (activeTab === 'tab-efteqad') hintEl.innerText = 'وضع الافتقاد: مسح الكود سيفتح نافذة تسجيل افتقاد للمخدوم فوراً!';
-            else hintEl.innerText = 'وضع البيانات: مسح الكود سيعرض ملف المخدوم فوراً!';
+            if (activeTab === 'tab-efteqad') setScannerActionMode('efteqad');
+            else if (activeTab === 'tab-makhdoom') setScannerActionMode('attendance');
 
             document.getElementById('qr-scanner-modal').classList.remove('hidden');
             if (html5QrScanner) {
@@ -1524,11 +1688,11 @@
             html5QrScanner = new Html5Qrcode("qr-reader");
             html5QrScanner.start(
                 { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 230, height: 230 } },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
                 (decodedText) => { handleScannedQRCode(decodedText); },
                 () => {}
             ).catch(() => {
-                hintEl.innerText = 'اضغط على زر "التقط/ارفع صورة الكود" بالأسفل لفتح كاميرا الموبايل مباشرة.';
+                document.getElementById('qr-reader').innerHTML = '<div class="p-6 text-amber-300 font-bold">اضغط على الزر الأصفر بالأسفل لتصوير الكود بكاميرا الموبايل مباشرة</div>';
             });
         }
 
@@ -1548,56 +1712,80 @@
             }).catch(() => alert('لم يتم العثور على كود QR واضح في الصورة'));
         }
 
+        function triggerManualQRSearch() {
+            const val = document.getElementById('manual-qr-input').value.trim();
+            if (!val) return;
+            handleScannedQRCode(val);
+        }
+
         function handleScannedQRCode(decoded) {
             stopQRScannerAndClose();
-            const m = window.appData.makhdoom.find(x => decoded.includes(x.id) || x.name === decoded.trim());
+            const q = decoded.trim().toLowerCase();
+            const m = window.appData.makhdoom.find(x => x.id.toLowerCase() === q || decoded.includes(x.id) || x.name.toLowerCase().includes(q));
             if (!m) {
-                alert('لم يتم التعرف على كود المخدوم: ' + decoded);
+                alert('لم يتم التعرف على المخدوم: ' + decoded);
                 return;
             }
-            const activeTab = document.querySelector('.tab-content.active')?.id || 'tab-makhdoom';
-            if (activeTab === 'tab-attendance') {
+            if (currentScannerActionMode === 'attendance') {
                 const date = document.getElementById('attendance-date-picker').value || new Date().toISOString().split('T')[0];
                 window.appData.attendance[date] = window.appData.attendance[date] || {};
-                window.appData.attendance[date][m.id] = { status: 'حاضر', excuse: 'تم التسجيل بمسح الـ QR' };
+                window.appData.attendance[date][m.id] = { status: 'حاضر', excuse: 'حضور بالـ QR' };
                 window.syncToCloud();
-                renderAttendanceTable();
+                renderAllViews();
                 showToast(`تم تسجيل حضور: ${m.name} ✅`);
-            } else if (activeTab === 'tab-efteqad') {
+            } else if (currentScannerActionMode === 'efteqad') {
                 openEfteqadModal(m.id);
             } else {
                 openEditMakhdoom(m.id);
             }
         }
 
-        // التحضير المتعدد الفقرات والملفات
+        // التحضير المتعدد الفقرات والملفات (إضافة + تعديل + حذف)
         function openAddPrepModal() {
+            document.getElementById('prep-modal-title').innerText = 'إضافة تحضير يوم خدمة جديد';
+            document.getElementById('edit-prep-id').value = '';
             document.getElementById('p-title').value = '';
             document.getElementById('p-notes').value = '';
             document.getElementById('p-links').value = '';
             document.getElementById('p-file-input').value = '';
             const container = document.getElementById('prep-segments-container');
             container.innerHTML = '';
-            addPrepSegmentRow('فقرة صلاة وترنيمة افتتاحية', '15 دقيقة');
-            addPrepSegmentRow('فقرة ألعاب / تنشيط', '20 دقيقة');
-            addPrepSegmentRow('الدرس الروحي الأساسي', '30 دقيقة');
+            addPrepSegmentRow('فقرة صلاة وترنيمة افتتاحية', '15 دقيقة', '');
+            addPrepSegmentRow('فقرة تنشيط / مسابقة', '20 دقيقة', '');
+            addPrepSegmentRow('الدرس الروحي الأساسي', '30 دقيقة', '');
             document.getElementById('prep-modal').classList.remove('hidden');
         }
 
-        function addPrepSegmentRow(title = '', duration = '') {
+        function openEditPrepModal(pId) {
+            const p = window.appData.prep.find(x => x.id === pId);
+            if (!p) return;
+            document.getElementById('prep-modal-title').innerText = 'تعديل التحضير وفقرات اليوم';
+            document.getElementById('edit-prep-id').value = p.id;
+            document.getElementById('p-title').value = p.title || '';
+            document.getElementById('p-type').value = p.type || 'يوم خدمة متعدد الفقرات';
+            document.getElementById('p-notes').value = p.notes || '';
+            document.getElementById('p-links').value = p.links || '';
+            const container = document.getElementById('prep-segments-container');
+            container.innerHTML = '';
+            (p.segments || []).forEach(s => addPrepSegmentRow(s.title, s.time, s.servant));
+            document.getElementById('prep-modal').classList.remove('hidden');
+        }
+
+        function addPrepSegmentRow(title = '', duration = '', servant = '') {
             const container = document.getElementById('prep-segments-container');
             const div = document.createElement('div');
             div.className = 'grid grid-cols-12 gap-2 items-center seg-row';
             div.innerHTML = `
-                <input type="text" placeholder="اسم الفقرة (مثال: فقرة افتتاحية 1)" value="${title}" class="col-span-5 p-2 rounded-xl border bg-white text-xs font-bold seg-title">
+                <input type="text" placeholder="اسم الفقرة" value="${title}" class="col-span-5 p-2 rounded-xl border bg-white text-xs font-bold seg-title">
                 <input type="text" placeholder="المدة (15 د)" value="${duration}" class="col-span-3 p-2 rounded-xl border bg-white text-xs seg-time">
-                <input type="text" placeholder="الخادم المسؤول" class="col-span-3 p-2 rounded-xl border bg-white text-xs seg-servant">
+                <input type="text" placeholder="الخادم المسؤول" value="${servant}" class="col-span-3 p-2 rounded-xl border bg-white text-xs seg-servant">
                 <button type="button" onclick="this.parentElement.remove()" class="col-span-1 text-rose-600 font-bold">✕</button>
             `;
             container.appendChild(div);
         }
 
         function savePrepData() {
+            const editId = document.getElementById('edit-prep-id').value;
             const title = document.getElementById('p-title').value.trim();
             if (!title) { alert('أدخل عنوان اليوم أو التحضير'); return; }
             const segments = [];
@@ -1610,20 +1798,24 @@
 
             const fileInput = document.getElementById('p-file-input');
             const file = fileInput.files[0];
+            const existingIdx = window.appData.prep.findIndex(x => x.id === editId);
 
             const finishSave = (fileDataUrl, fileName, fileType) => {
-                window.appData.prep.push({
-                    id: 'P_' + Date.now(),
+                const obj = {
+                    id: editId || ('P_' + Date.now()),
                     title,
                     type: document.getElementById('p-type').value,
                     segments,
                     notes: document.getElementById('p-notes').value.trim(),
                     links: document.getElementById('p-links').value.trim(),
-                    fileDataUrl,
-                    fileName,
-                    fileType,
-                    date: formatEgyptianDate(new Date().toISOString().split('T')[0])
-                });
+                    fileDataUrl: fileDataUrl || (existingIdx >= 0 ? window.appData.prep[existingIdx].fileDataUrl : null),
+                    fileName: fileName || (existingIdx >= 0 ? window.appData.prep[existingIdx].fileName : null),
+                    fileType: fileType || (existingIdx >= 0 ? window.appData.prep[existingIdx].fileType : null),
+                    date: existingIdx >= 0 ? window.appData.prep[existingIdx].date : formatEgyptianDate(new Date().toISOString().split('T')[0])
+                };
+                if (existingIdx >= 0) window.appData.prep[existingIdx] = obj;
+                else window.appData.prep.push(obj);
+
                 closeModal('prep-modal');
                 window.syncToCloud();
                 renderPrepCards();
@@ -1639,6 +1831,13 @@
             }
         }
 
+        function deletePrepItem(pId) {
+            if (!confirm('حذف هذا التحضير؟')) return;
+            window.appData.prep = window.appData.prep.filter(x => x.id !== pId);
+            window.syncToCloud();
+            renderPrepCards();
+        }
+
         function renderPrepCards() {
             const grid = document.getElementById('prep-cards-grid');
             if (!window.appData.prep || window.appData.prep.length === 0) {
@@ -1646,27 +1845,33 @@
                 return;
             }
             grid.innerHTML = window.appData.prep.slice().reverse().map(p => `
-                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">${p.type}</span>
-                            <h3 class="font-black text-indigo-950 text-base mt-1">${p.title}</h3>
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between space-y-3">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">${p.type}</span>
+                                <h3 class="font-black text-indigo-950 text-base mt-1">${p.title}</h3>
+                            </div>
+                            <span class="text-[11px] text-slate-400 font-bold">${p.date || ''}</span>
                         </div>
-                        <span class="text-[11px] text-slate-400 font-bold">${p.date || ''}</span>
+                        ${(p.segments && p.segments.length > 0) ? `
+                            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1 text-xs">
+                                <div class="font-extrabold text-indigo-950 mb-1">جدول فقرات اليوم:</div>
+                                ${p.segments.map((s, idx) => `<div class="flex justify-between border-b border-slate-200/60 py-1"><span><strong>${idx+1}. ${s.title}</strong> (${s.servant || '—'})</span><span class="text-indigo-700 font-bold">${s.time}</span></div>`).join('')}
+                            </div>
+                        ` : ''}
+                        ${p.notes ? `<p class="text-xs text-slate-600 whitespace-pre-line">${p.notes}</p>` : ''}
+                        ${p.links ? `<a href="${p.links}" target="_blank" class="text-xs text-indigo-600 font-bold underline block">🔗 فتح الرابط المرجعي للتحضير</a>` : ''}
+                        ${p.fileDataUrl ? (
+                            (p.fileType && p.fileType.startsWith('audio/'))
+                                ? `<audio controls src="${p.fileDataUrl}" class="w-full h-9 mt-2"></audio>`
+                                : `<a href="${p.fileDataUrl}" download="${p.fileName || 'file.pdf'}" class="inline-block bg-rose-50 text-rose-700 px-3 py-1.5 rounded-xl text-xs font-bold"><i class="fa-solid fa-file-pdf ml-1"></i> تحميل الملف المرفق (${p.fileName})</a>`
+                        ) : ''}
                     </div>
-                    ${(p.segments && p.segments.length > 0) ? `
-                        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1 text-xs">
-                            <div class="font-extrabold text-indigo-950 mb-1">جدول فقرات اليوم:</div>
-                            ${p.segments.map((s, idx) => `<div class="flex justify-between border-b border-slate-200/60 py-1"><span><strong>${idx+1}. ${s.title}</strong> (${s.servant || '—'})</span><span class="text-indigo-700 font-bold">${s.time}</span></div>`).join('')}
-                        </div>
-                    ` : ''}
-                    ${p.notes ? `<p class="text-xs text-slate-600 whitespace-pre-line">${p.notes}</p>` : ''}
-                    ${p.links ? `<a href="${p.links}" target="_blank" class="text-xs text-indigo-600 font-bold underline block">🔗 فتح الرابط المرجعي للتحضير</a>` : ''}
-                    ${p.fileDataUrl ? (
-                        (p.fileType && p.fileType.startsWith('audio/'))
-                            ? `<audio controls src="${p.fileDataUrl}" class="w-full h-9 mt-2"></audio>`
-                            : `<a href="${p.fileDataUrl}" download="${p.fileName || 'file.pdf'}" class="inline-block bg-rose-50 text-rose-700 px-3 py-1.5 rounded-xl text-xs font-bold"><i class="fa-solid fa-file-pdf ml-1"></i> تحميل الملف المرفق (${p.fileName})</a>`
-                    ) : ''}
+                    <div class="flex gap-2 pt-2 border-t">
+                        <button onclick="openEditPrepModal('${p.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-xl text-xs font-bold">تعديل التحضير</button>
+                        <button onclick="deletePrepItem('${p.id}')" class="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-xs font-bold">حذف</button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -1745,7 +1950,7 @@
 
                     const initNote = String(row["ملاحظات وتنبيهات الخادم"] || row["ملاحظات"] || "").trim();
                     window.appData.makhdoom.push({
-                        id: 'MK_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                        id: 'MK_' + Date.now().toString().slice(-5) + '_' + Math.floor(Math.random()*900),
                         name: normName,
                         class: String(row["الفصل"] || "").trim(),
                         phone,
@@ -1770,39 +1975,57 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // تقارير الـ PDF الشاملة والطباعة المباشرة (بدون كلمة "منتظم ✓")
+        // تقارير الـ PDF الشاملة والطباعة المباشرة (مع الفلاتر والخانات المخصصة)
         function openReportModal() {
+            populateFilterDropdowns();
             buildReportPreview();
             document.getElementById('report-modal').classList.remove('hidden');
         }
 
         function buildReportPreview() {
             const cols = Array.from(document.querySelectorAll('.rpt-col:checked')).map(c => c.value);
+            const fClass = document.getElementById('rpt-filter-class')?.value || '';
+            const fServant = document.getElementById('rpt-filter-servant')?.value || '';
+            const fAlert = document.getElementById('rpt-filter-alert')?.value || '';
             const target = document.getElementById('report-render-target');
             const todayStr = formatEgyptianDate(new Date().toISOString().split('T')[0]);
+
+            const filteredList = window.appData.makhdoom.filter(m => {
+                if (fClass && m.class !== fClass) return false;
+                if (fServant && m.servant !== fServant) return false;
+                if (fAlert) {
+                    const al = getMakhdoomAlerts(m);
+                    if (!al.some(a => a.type === fAlert)) return false;
+                }
+                return true;
+            });
 
             let thHtml = `<th style="padding:8px;border:1px solid #cbd5e1;">#</th><th style="padding:8px;border:1px solid #cbd5e1;">اسم المخدوم</th>`;
             if (cols.includes('class')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">الفصل</th>`;
             if (cols.includes('phone')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">التليفون</th>`;
+            if (cols.includes('address')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">العنوان</th>`;
             if (cols.includes('servant')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">الخادم المسؤول</th>`;
             if (cols.includes('bday')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">تاريخ الميلاد</th>`;
             if (cols.includes('spiritual')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">أب الاعتراف / آخر تناول واعتراف</th>`;
             if (cols.includes('efteqad')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">تاريخ آخر افتقاد</th>`;
-            if (cols.includes('notes')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">ملاحظات وتنبيهات الخادم</th>`;
+            if (cols.includes('custom')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">بيانات إضافية</th>`;
+            if (cols.includes('notes')) thHtml += `<th style="padding:8px;border:1px solid #cbd5e1;">سجل ملاحظات وتنبيهات الخادم</th>`;
 
-            const rowsHtml = window.appData.makhdoom.map((m, i) => {
-                // عرض جميع الملاحظات التي كتبها الخادم بدون كلمة "منتظم"
+            const rowsHtml = filteredList.map((m, i) => {
                 const servantNotes = (m.notesHistory && m.notesHistory.length > 0)
                     ? m.notesHistory.map(n => `• (${n.date} - ${n.servant}): ${n.note}`).join('<br>')
                     : '—';
+                const customTxt = (window.appData.customFields || []).map(f => (m.customData && m.customData[f]) ? `${f}: ${m.customData[f]}` : '').filter(Boolean).join('<br>') || '—';
 
                 let tr = `<tr><td style="padding:7px;border:1px solid #cbd5e1;font-weight:bold;">${i+1}</td><td style="padding:7px;border:1px solid #cbd5e1;font-weight:bold;">${m.name}</td>`;
                 if (cols.includes('class')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">${m.class || '—'}</td>`;
                 if (cols.includes('phone')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">${m.phone || '—'}</td>`;
+                if (cols.includes('address')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">${m.address || '—'}</td>`;
                 if (cols.includes('servant')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">${m.servant || '—'}</td>`;
                 if (cols.includes('bday')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">${m.birthDate || '—'}</td>`;
                 if (cols.includes('spiritual')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">أب الاعتراف: ${m.confessor || '—'}<br>تناول: ${formatEgyptianDate(m.communion)} | اعتراف: ${formatEgyptianDate(m.confession)}</td>`;
                 if (cols.includes('efteqad')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">${formatEgyptianDate(m.lastEfteqad)}</td>`;
+                if (cols.includes('custom')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">${customTxt}</td>`;
                 if (cols.includes('notes')) tr += `<td style="padding:7px;border:1px solid #cbd5e1;">${servantNotes}</td>`;
                 tr += `</tr>`;
                 return tr;
@@ -1817,7 +2040,7 @@
                         </div>
                         <div style="font-size:11px;color:#334155;">
                             <div>تاريخ التقرير: ${todayStr}</div>
-                            <div>إجمالي المخدومين: ${window.appData.makhdoom.length}</div>
+                            <div>العدد المعروض بالتقرير: ${filteredList.length}</div>
                         </div>
                     </div>
                     <table style="width:100%;border-collapse:collapse;font-size:11px;">
@@ -1856,16 +2079,62 @@
             win.document.close();
         }
 
-        // الواتساب الجماعي الفوري
+        // الواتساب الجماعي المتقدم (مع الفلترة وتحديد الأسماء)
         function openBulkWhatsAppModal() {
+            populateFilterDropdowns();
+            renderBulkWhatsAppRecipients();
             document.getElementById('bulk-whatsapp-modal').classList.remove('hidden');
+        }
+
+        function renderBulkWhatsAppRecipients() {
+            const group = document.getElementById('wa-filter-group').value;
+            const fClass = document.getElementById('wa-filter-class').value;
+            const fServant = document.getElementById('wa-filter-servant').value;
+            const template = document.getElementById('bulk-wa-msg').value;
+            const curMonth = new Date().getMonth() + 1;
+
+            const targets = window.appData.makhdoom.filter(m => {
+                if (!m.phone) return false;
+                if (fClass && m.class !== fClass) return false;
+                if (fServant && m.servant !== fServant) return false;
+                if (group === 'absence') return getMakhdoomAlerts(m).some(a => a.type === 'absence');
+                if (group === 'efteqad') return getMakhdoomAlerts(m).some(a => a.type === 'efteqad');
+                if (group === 'bday_month') {
+                    const parts = (m.birthDate || '').split('/');
+                    return parts.length >= 2 && Number(parts[1]) === curMonth;
+                }
+                return true;
+            });
+
+            document.getElementById('wa-recipients-count').innerText = targets.length;
+            const listEl = document.getElementById('wa-recipients-list');
+            listEl.innerHTML = targets.map(m => {
+                const phone = m.phone.replace(/\D/g, '');
+                const msg = template.replace(/\{الاسم\}/g, m.name);
+                const link = `https://wa.me/2${phone}?text=${encodeURIComponent(msg)}`;
+                return `
+                    <div class="flex justify-between items-center bg-white p-2 rounded-xl border">
+                        <label class="flex items-center gap-2 font-bold">
+                            <input type="checkbox" class="wa-recipient-check accent-emerald-600" value="${m.id}" checked>
+                            <span>${m.name} (${m.phone})</span>
+                        </label>
+                        <a href="${link}" target="_blank" class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg font-bold">إرسال فردي 💬</a>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleAllWARecipients(checked) {
+            document.querySelectorAll('.wa-recipient-check').forEach(c => c.checked = checked);
         }
 
         async function launchBulkWhatsAppAllAtOnce() {
             const template = document.getElementById('bulk-wa-msg').value;
             const apiUrl = document.getElementById('bulk-wa-api').value.trim();
-            const targets = window.appData.makhdoom.filter(m => m.phone);
-            if (targets.length === 0) { alert('لا توجد أرقام تليفونات مسجلة للمخدومين'); return; }
+            const checkedIds = Array.from(document.querySelectorAll('.wa-recipient-check:checked')).map(c => c.value);
+            const targets = window.appData.makhdoom.filter(m => checkedIds.includes(m.id) && m.phone);
+
+            if (targets.length === 0) { alert('حدد مخدوماً واحداً على الأقل'); return; }
 
             if (apiUrl) {
                 for (const m of targets) {
@@ -1885,30 +2154,37 @@
             closeModal('bulk-whatsapp-modal');
         }
 
-        // إدارة الخدام والصلاحيات وإيقاف الحساب مؤقتاً
+        // إدارة الخدام والصلاحيات وإيقاف الحساب مؤقتاً وتعديل الخادم
         function renderServantsManagement() {
             const tbody = document.getElementById('servants-list-tbody');
             if (!tbody) return;
             tbody.innerHTML = window.appData.servants.map(s => {
                 const isActive = s.active !== false;
-                const hasAlertsPerm = s.role === 'admin' || (s.perms && s.perms.alerts);
+                const p = s.perms || {};
+                const permsBadges = s.role === 'admin'
+                    ? '<span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold">كامل الصلاحيات (Admin)</span>'
+                    : [
+                        p.alerts ? '🔔 التنبيهات' : '',
+                        p.delete ? '🗑️ الحذف' : '',
+                        p.reports ? '📄 التقارير' : '',
+                        p.prep ? '📖 التحضير' : ''
+                    ].filter(Boolean).map(t => `<span class="bg-slate-100 px-2 py-0.5 rounded">${t}</span>`).join(' ');
+
                 return `
                     <tr>
                         <td class="p-3 font-black text-indigo-950">${s.name}</td>
                         <td class="p-3 font-mono">${s.pass}</td>
                         <td class="p-3">${s.role === 'admin' ? 'مسؤول البرنامج' : 'خادم'}</td>
-                        <td class="p-3">
-                            <input type="checkbox" ${hasAlertsPerm ? 'checked' : ''} onchange="toggleServantAlertPerm('${s.id}', this.checked)" class="w-4 h-4 accent-pink-600">
-                            <span class="text-[11px] mr-1">رؤية التنبيهات</span>
-                        </td>
+                        <td class="p-3 text-[11px]">${permsBadges || 'صلاحية أساسية'}</td>
                         <td class="p-3">
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
                                 ${isActive ? 'نشط ✅' : 'موقوف مؤقتاً ⏸️'}
                             </span>
                         </td>
-                        <td class="p-3 flex gap-1.5">
-                            <button onclick="toggleServantActive('${s.id}')" class="px-3 py-1 rounded-lg text-xs font-bold ${isActive ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'}">
-                                ${isActive ? 'إيقاف مؤقت ⏸️' : 'تشغيل الحساب ▶️'}
+                        <td class="p-3 flex flex-wrap gap-1.5">
+                            <button onclick="editServantForm('${s.id}')" class="bg-indigo-50 text-indigo-800 px-2.5 py-1 rounded-lg text-xs font-bold">تعديل ✏️</button>
+                            <button onclick="toggleServantActive('${s.id}')" class="px-2.5 py-1 rounded-lg text-xs font-bold ${isActive ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'}">
+                                ${isActive ? 'إيقاف مؤقت ⏸️' : 'تشغيل ▶️'}
                             </button>
                             ${s.id !== 's_admin' ? `<button onclick="deleteServant('${s.id}')" class="bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg text-xs font-bold">حذف</button>` : ''}
                         </td>
@@ -1917,29 +2193,61 @@
             }).join('');
         }
 
-        function addNewServant() {
+        function editServantForm(sId) {
+            const s = window.appData.servants.find(x => x.id === sId);
+            if (!s) return;
+            document.getElementById('servant-form-title').innerText = `✏️ تعديل بيانات وصلاحيات: ${s.name}`;
+            document.getElementById('edit-servant-id').value = s.id;
+            document.getElementById('new-servant-name').value = s.name;
+            document.getElementById('new-servant-pass').value = s.pass;
+            document.getElementById('new-servant-phone').value = s.phone || '';
+            document.getElementById('new-servant-role').value = s.role || 'servant';
+            document.getElementById('perm-alerts').checked = !!(s.perms && s.perms.alerts);
+            document.getElementById('perm-delete').checked = !!(s.perms && s.perms.delete);
+            document.getElementById('perm-reports').checked = !!(s.perms && s.perms.reports);
+            document.getElementById('perm-prep').checked = !!(s.perms && s.perms.prep);
+        }
+
+        function resetServantForm() {
+            document.getElementById('servant-form-title').innerText = '➕ إضافة خادم جديد وتحديد صلاحياته';
+            document.getElementById('edit-servant-id').value = '';
+            document.getElementById('new-servant-name').value = '';
+            document.getElementById('new-servant-pass').value = '';
+            document.getElementById('new-servant-phone').value = '';
+            document.getElementById('new-servant-role').value = 'servant';
+            document.getElementById('perm-alerts').checked = true;
+            document.getElementById('perm-delete').checked = false;
+            document.getElementById('perm-reports').checked = true;
+            document.getElementById('perm-prep').checked = true;
+        }
+
+        function saveServantForm() {
+            const editId = document.getElementById('edit-servant-id').value;
             const name = document.getElementById('new-servant-name').value.trim();
             const pass = document.getElementById('new-servant-pass').value.trim();
             const phone = document.getElementById('new-servant-phone').value.trim();
             const role = document.getElementById('new-servant-role').value;
             if (!name || !pass) { alert('أدخل اسم الخادم والرقم السري'); return; }
 
-            window.appData.servants.push({
-                id: 'S_' + Date.now(),
-                name, pass, phone, role, active: true,
-                perms: {
-                    alerts: document.getElementById('perm-alerts').checked,
-                    delete: document.getElementById('perm-delete').checked,
-                    reports: document.getElementById('perm-reports').checked,
-                    prep: document.getElementById('perm-prep').checked
-                }
-            });
-            document.getElementById('new-servant-name').value = '';
-            document.getElementById('new-servant-pass').value = '';
+            const perms = {
+                alerts: document.getElementById('perm-alerts').checked,
+                delete: document.getElementById('perm-delete').checked,
+                reports: document.getElementById('perm-reports').checked,
+                prep: document.getElementById('perm-prep').checked
+            };
+
+            const existingIdx = window.appData.servants.findIndex(x => x.id === editId);
+            if (existingIdx >= 0) {
+                window.appData.servants[existingIdx] = Object.assign(window.appData.servants[existingIdx], { name, pass, phone, role, perms });
+            } else {
+                window.appData.servants.push({ id: 'S_' + Date.now(), name, pass, phone, role, active: true, perms });
+            }
+
+            resetServantForm();
             window.syncToCloud();
             renderAllViews();
             refreshLoginDropdown();
-            showToast('تمت إضافة الخادم وحفظ صلاحياته');
+            showToast('تم حفظ بيانات الخادم وصلاحياته سحابياً');
         }
 
         function toggleServantActive(sId) {
@@ -1950,16 +2258,6 @@
                 renderServantsManagement();
                 refreshLoginDropdown();
                 showToast(s.active ? 'تم تفعيل حساب الخادم ▶️' : 'تم إيقاف حساب الخادم مؤقتاً ⏸️');
-            }
-        }
-
-        function toggleServantAlertPerm(sId, allowed) {
-            const s = window.appData.servants.find(x => x.id === sId);
-            if (s) {
-                s.perms = s.perms || {};
-                s.perms.alerts = allowed;
-                window.syncToCloud();
-                renderSmartAlertsBanner();
             }
         }
 
