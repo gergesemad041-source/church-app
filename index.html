@@ -936,26 +936,39 @@
             if (currentVal) sel.value = currentVal;
         }
 
-        function handleLogin() {
-            const name = document.getElementById('login-servant-select').value;
-            const pass = document.getElementById('login-pass').value.trim();
-            const servant = window.appData.servants.find(s => s.name === name && s.pass === pass);
-            if (!servant) {
-                alert('الرقم السري غير صحيح!');
-                return;
-            }
-            if (servant.active === false) {
-                alert('عفواً، هذا الحساب موقوف مؤقتاً بواسطة مسؤول البرنامج.');
-                return;
-            }
-            window.currentLoggedInServant = servant;
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('hidden');
-            document.getElementById('current-user-display').innerText = `الخادم: ${servant.name}`;
-            document.getElementById('nav-btn-admin').style.display = servant.role === 'admin' ? 'flex' : 'none';
-            renderAllViews();
-        }
+       function handleLogin() {
+    const userInput = document.getElementById('login-user').value.trim().toLowerCase();
+    const pass = document.getElementById('login-pass').value.trim();
 
+    if (!userInput || !pass) {
+        alert('يرجى إدخال اسم المستخدم وكلمة المرور!');
+        return;
+    }
+
+    const servant = window.appData.servants.find(s => {
+        const sUser = (s.username || '').trim().toLowerCase();
+        const sName = (s.name || '').trim().toLowerCase();
+        const isAdminAlias = (s.role === 'admin' && userInput === 'admin');
+        return (sUser === userInput || sName === userInput || isAdminAlias) && String(s.pass) === String(pass);
+    });
+
+    if (!servant) {
+        alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
+        return;
+    }
+
+    if (servant.active === false) {
+        alert('عذراً، هذا الحساب موقوف مؤقتاً بواسطة مسؤول البرنامج!');
+        return;
+    }
+
+    window.currentLoggedInServant = servant;
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app-container').classList.remove('hidden');
+    document.getElementById('current-user-display').innerText = `الخادم: ${servant.name}`;
+    document.getElementById('nav-btn-admin').style.display = servant.role === 'admin' ? 'flex' : 'none';
+    renderAllViews();
+}
         function logout() {
             window.currentLoggedInServant = null;
             document.getElementById('app-container').classList.add('hidden');
