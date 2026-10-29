@@ -1935,62 +1935,104 @@
             XLSX.writeFile(wb, "كشف_المخدومين_الشامل.xlsx");
         }
 
-        function handleExcelImport(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const wb = XLSX.read(data, { type: 'array' });
-                const ws = wb.Sheets[wb.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
+  // دالة ذكية لتحويل الرقم التسلسلي لتاريخ الإكسيل أو أي صيغة تاريخ إلى (YYYY-MM-DD)
+function parseExcelDate(val) {
+    if (!val && val !== 0) return '';
+    const strVal = String(val).trim();
+    if (!strVal) return '';
 
-                let added = 0, skipped = 0;
-                const seenNamesInSheet = new Set();
-
-                json.forEach(row => {
-                    const name = String(row["اسم المخدوم"] || row["الاسم"] || "").trim();
-                    const phone = String(row["التليفون"] || row["رقم التليفون"] || "").trim();
-                    if (!name) return;
-
-                    const normName = name.replace(/\s+/g, ' ');
-                    if (seenNamesInSheet.has(normName) || window.appData.makhdoom.some(m => m.name.replace(/\s+/g, ' ') === normName || (phone && m.phone === phone))) {
-                        skipped++;
-                        return;
-                    }
-                    seenNamesInSheet.add(normName);
-
-                    const customData = {};
-                    (window.appData.customFields || []).forEach(f => {
-                        if (row[f] !== undefined) customData[f] = String(row[f]).trim();
-                    });
-
-                    const initNote = String(row["ملاحظات وتنبيهات الخادم"] || row["ملاحظات"] || "").trim();
-                    window.appData.makhdoom.push({
-                        id: 'MK_' + Date.now().toString().slice(-5) + '_' + Math.floor(Math.random()*900),
-                        name: normName,
-                        class: String(row["الفصل"] || "").trim(),
-                        phone,
-                        address: String(row["العنوان"] || "").trim(),
-                        servant: String(row["الخادم المسؤول"] || "").trim(),
-                        birthDate: String(row["تاريخ الميلاد (يوم/شهر/سنة)"] || row["تاريخ الميلاد"] || "").trim(),
-                        confessor: String(row["أب الاعتراف"] || "").trim(),
-                        lastEfteqad: String(row["تاريخ آخر افتقاد"] || "").trim(),
-                        communion: String(row["تاريخ آخر تناول"] || "").trim(),
-                        confession: String(row["تاريخ آخر اعتراف"] || "").trim(),
-                        customData,
-                        notesHistory: initNote ? [{ date: formatEgyptianDate(new Date().toISOString().split('T')[0]), type: 'استيراد إكسيل', servant: 'النظام', note: initNote }] : []
-                    });
-                    added++;
-                });
-
-                closeModal('excel-modal');
-                window.syncToCloud();
-                renderAllViews();
-                alert(`تم استيراد ${added} مخدوم بنجاح!\nوتم منع تكرار ${skipped} اسم مكرر.`);
-            };
-            reader.readAsArrayBuffer(file);
+    // 1. لو القيمة جاية من الإكسيل كرقم تسلسلي (مثل 36933)
+    if (typeof val === 'number' || (!isNaN(strVal) && /^\d{4,5}(\.\d+)?$/.test(strVal))) {
+        const serial = Number(strVal);
+        if (serial > 10000 && serial < 90000) {
+            const utcDays = Math.floor(serial - 25569);
+            const dateInfo = new Date(utcDays * 86400 * 1000);
+            const y = dateInfo.getUTCFullYear();
+            const m = String(dateInfo.getUTCMonth() + 1).padStart(2, '0');
+            const d = String(dateInfo.getUTCDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
         }
+    }
+
+    // 2. لو القيمة كائن تاريخ (Date Object)
+    if (val instanceof Date && !isNaN(val)) {
+        const y = val.getFullYear();
+        const m = String(val.getMonth() + 1).padStart(2, '0');
+        const d = String(val.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    // 3. لو مكتوب بصيغة يوم/شهر/سنة (مثل 11/02/2001 أو 11-2-2001)
+    const dmyMatch = strVal.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (dmyMatch) {
+        return `${dmyMatch[3]}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`;
+    }
+
+    // 4. لو مكتوب بصيغة سنة/شهر/يوم (مثل 2001/02/11 أو 2001-02-11)
+    const ymdMatch = strVal.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+    if (ymdMatch) {
+        return `${ymdMatch[1]}-${ymdMatch[2].padStart(2, '0')}-${ymdMatch[3].padStart(2, '0')}`;
+    }
+
+    return strVal;
+}
+
+function handleExcelImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+        let added = 0, skipped = 0;
+        const seenNamesInSheet = new Set();
+
+        json.forEach(row => {
+            const name = String(row["اسم المخدوم"] || row["الاسم"] || "").trim();
+            const phone = String(row["التليفون"] || row["رقم التليفون"] || "").trim();
+            if (!name) return;
+
+            const normName = name.replace(/\s+/g, ' ');
+            if (seenNamesInSheet.has(normName) || window.appData.makhdoom.some(m => m.name.replace(/\s+/g, ' ') === normName || (phone && m.phone === phone))) {
+                skipped++;
+                return;
+            }
+            seenNamesInSheet.add(normName);
+
+            const customData = {};
+            (window.appData.customFields || []).forEach(f => {
+                if (row[f] !== undefined) customData[f] = String(row[f]).trim();
+            });
+
+            const initNote = String(row["ملاحظات وتاريخات الافتقاد"] || row["ملاحظات"] || "").trim();
+            window.appData.makhdoom.push({
+                id: 'mk_' + Date.now().toString().slice(-5) + '_' + Math.floor(Math.random()*900),
+                name: normName,
+                class: String(row["الفصل"] || "").trim(),
+                phone,
+                address: String(row["العنوان"] || "").trim(),
+                servant: String(row["الخادم المسؤول"] || "").trim(),
+                birthDate: parseExcelDate(row["تاريخ الميلاد (يوم/شهر/سنة)"] || row["تاريخ الميلاد"] || ""),
+                confessor: String(row["أب الاعتراف"] || "").trim(),
+                lastEfteqad: parseExcelDate(row["تاريخ آخر افتقاد"] || ""),
+                communion: parseExcelDate(row["تاريخ آخر تناول"] || ""),
+                confession: parseExcelDate(row["تاريخ آخر اعتراف"] || ""),
+                customData,
+                notesHistory: initNote ? [{ date: formatEgyptianDate(new Date().toISOString().split('T')[0]), type: 'استيراد إكسيل', servant: 'النظام', note: initNote }] : []
+            });
+            added++;
+        });
+
+        closeModal('excel-modal');
+        window.syncToCloud();
+        renderAllViews();
+        alert(`تم استيراد (${added}) مخدوم بنجاح! (وتم منع تكرار ${skipped} اسم مكرر).`);
+    };
+    reader.readAsArrayBuffer(file);
+}
 
         // تقارير الـ PDF الشاملة والطباعة المباشرة (مع الفلاتر والخانات المخصصة)
         function openReportModal() {
