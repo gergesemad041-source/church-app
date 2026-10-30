@@ -2345,6 +2345,23 @@ function handleExcelImport(e) {
         }
 
         // إدارة الخدام والصلاحيات وإيقاف الحساب مؤقتاً وتعديل الخادم
+   // دالة نسخ سريعة لأرقام تليفونات وواتساب الخدام بضغطة زر
+        window.copyServantText = function(txt, label) {
+            if (!txt) return;
+            navigator.clipboard.writeText(txt).then(() => {
+                if (typeof showToast === 'function') showToast(`تم نسخ ${label}: ${txt} 📋`);
+            }).catch(() => {
+                const el = document.createElement('textarea');
+                el.value = txt;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                if (typeof showToast === 'function') showToast(`تم نسخ ${label}: ${txt} 📋`);
+            });
+        };
+
+        // إدارة الخدام والصلاحيات وإيقاف الحساب مؤقتاً وتعديل الخادم
         function renderServantsManagement() {
             const tbody = document.getElementById('servants-list-tbody');
             if (!tbody) return;
@@ -2355,14 +2372,35 @@ function handleExcelImport(e) {
                     ? '<span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold">كامل الصلاحيات (Admin)</span>'
                     : [
                         p.alerts ? '🔔 التنبيهات' : '',
+                        p.addEdit ? '➕ إضافة/تعديل' : '',
                         p.delete ? '🗑️ الحذف' : '',
+                        p.attendance ? '📋 الغياب' : '',
+                        p.efteqad ? '❤️ الافتقاد' : '',
+                        p.prep ? '✝️ التحضير' : '',
                         p.reports ? '📄 التقارير' : '',
-                        p.prep ? '📖 التحضير' : ''
-                    ].filter(Boolean).map(t => `<span class="bg-slate-100 px-2 py-0.5 rounded">${t}</span>`).join(' ');
+                        p.whatsapp ? '💬 واتساب' : ''
+                    ].filter(Boolean).map(t => `<span class="bg-slate-100 px-2 py-0.5 rounded inline-block m-0.5">${t}</span>`).join(' ');
+
+                const loginUser = s.username || s.name;
+                const phoneHtml = s.phone ? `
+                    <div class="flex items-center gap-1 mt-1 text-[11px] text-slate-600">
+                        <span>📞 ${s.phone}</span>
+                        <button onclick="copyServantText('${s.phone}', 'رقم المكالمات')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-bold" title="نسخ رقم المكالمات">نسخ 📋</button>
+                    </div>` : '';
+                const waHtml = s.whatsapp ? `
+                    <div class="flex items-center gap-1 mt-1 text-[11px] text-emerald-700">
+                        <span>💬 ${s.whatsapp}</span>
+                        <button onclick="copyServantText('${s.whatsapp}', 'رقم الواتساب')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded text-[10px] font-bold" title="نسخ رقم الواتساب">نسخ 📋</button>
+                    </div>` : '';
 
                 return `
                     <tr>
-                        <td class="p-3 font-black text-indigo-950">${s.name}</td>
+                        <td class="p-3">
+                            <div class="font-black text-indigo-950">${s.name}</div>
+                            <div class="text-[11px] text-indigo-600 font-bold">👤 الدخول: <span class="font-mono">${loginUser}</span></div>
+                            ${phoneHtml}
+                            ${waHtml}
+                        </td>
                         <td class="p-3 font-mono">${s.pass}</td>
                         <td class="p-3">${s.role === 'admin' ? 'مسؤول البرنامج' : 'خادم'}</td>
                         <td class="p-3 text-[11px]">${permsBadges || 'صلاحية أساسية'}</td>
@@ -2374,7 +2412,7 @@ function handleExcelImport(e) {
                         <td class="p-3 flex flex-wrap gap-1.5">
                             <button onclick="editServantForm('${s.id}')" class="bg-indigo-50 text-indigo-800 px-2.5 py-1 rounded-lg text-xs font-bold">تعديل ✏️</button>
                             <button onclick="toggleServantActive('${s.id}')" class="px-2.5 py-1 rounded-lg text-xs font-bold ${isActive ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'}">
-                                ${isActive ? 'إيقاف مؤقت ⏸️' : 'تشغيل ▶️'}
+                                ${isActive ? 'إيقاف مؤقت ⏸️' : 'تفعيل ▶️'}
                             </button>
                             ${s.id !== 's_admin' ? `<button onclick="deleteServant('${s.id}')" class="bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg text-xs font-bold">حذف</button>` : ''}
                         </td>
@@ -2388,55 +2426,86 @@ function handleExcelImport(e) {
             if (!s) return;
             document.getElementById('servant-form-title').innerText = `✏️ تعديل بيانات وصلاحيات: ${s.name}`;
             document.getElementById('edit-servant-id').value = s.id;
-            document.getElementById('new-servant-name').value = s.name;
-            document.getElementById('new-servant-pass').value = s.pass;
+            document.getElementById('new-servant-name').value = s.name || '';
+            const userEl = document.getElementById('new-servant-username');
+            if (userEl) userEl.value = s.username || s.name || '';
+            document.getElementById('new-servant-pass').value = s.pass || '';
             document.getElementById('new-servant-phone').value = s.phone || '';
+            const waEl = document.getElementById('new-servant-whatsapp');
+            if (waEl) waEl.value = s.whatsapp || '';
             document.getElementById('new-servant-role').value = s.role || 'servant';
-            document.getElementById('perm-alerts').checked = !!(s.perms && s.perms.alerts);
-            document.getElementById('perm-delete').checked = !!(s.perms && s.perms.delete);
-            document.getElementById('perm-reports').checked = !!(s.perms && s.perms.reports);
-            document.getElementById('perm-prep').checked = !!(s.perms && s.perms.prep);
+
+            const p = s.perms || {};
+            const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+            setCheck('perm-alerts', p.alerts !== false);
+            setCheck('perm-add-edit', p.addEdit !== false);
+            setCheck('perm-delete', !!p.delete);
+            setCheck('perm-attendance', p.attendance !== false);
+            setCheck('perm-efteqad', p.efteqad !== false);
+            setCheck('perm-prep', p.prep !== false);
+            setCheck('perm-reports', p.reports !== false);
+            setCheck('perm-whatsapp', p.whatsapp !== false);
         }
 
         function resetServantForm() {
             document.getElementById('servant-form-title').innerText = '➕ إضافة خادم جديد وتحديد صلاحياته';
             document.getElementById('edit-servant-id').value = '';
             document.getElementById('new-servant-name').value = '';
+            const userEl = document.getElementById('new-servant-username');
+            if (userEl) userEl.value = '';
             document.getElementById('new-servant-pass').value = '';
             document.getElementById('new-servant-phone').value = '';
+            const waEl = document.getElementById('new-servant-whatsapp');
+            if (waEl) waEl.value = '';
             document.getElementById('new-servant-role').value = 'servant';
-            document.getElementById('perm-alerts').checked = true;
-            document.getElementById('perm-delete').checked = false;
-            document.getElementById('perm-reports').checked = true;
-            document.getElementById('perm-prep').checked = true;
+
+            const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val; };
+            setCheck('perm-alerts', true);
+            setCheck('perm-add-edit', true);
+            setCheck('perm-delete', false);
+            setCheck('perm-attendance', true);
+            setCheck('perm-efteqad', true);
+            setCheck('perm-prep', true);
+            setCheck('perm-reports', true);
+            setCheck('perm-whatsapp', true);
         }
 
         function saveServantForm() {
             const editId = document.getElementById('edit-servant-id').value;
             const name = document.getElementById('new-servant-name').value.trim();
+            const userEl = document.getElementById('new-servant-username');
+            const username = (userEl && userEl.value.trim()) ? userEl.value.trim() : name;
             const pass = document.getElementById('new-servant-pass').value.trim();
             const phone = document.getElementById('new-servant-phone').value.trim();
+            const waEl = document.getElementById('new-servant-whatsapp');
+            const whatsapp = waEl ? waEl.value.trim() : '';
             const role = document.getElementById('new-servant-role').value;
-            if (!name || !pass) { alert('أدخل اسم الخادم والرقم السري'); return; }
 
+            if (!name || !pass) { alert('أدخل اسم الخادم الظاهر والرقم السري!'); return; }
+
+            const getCheck = (id, defVal) => { const el = document.getElementById(id); return el ? el.checked : defVal; };
             const perms = {
-                alerts: document.getElementById('perm-alerts').checked,
-                delete: document.getElementById('perm-delete').checked,
-                reports: document.getElementById('perm-reports').checked,
-                prep: document.getElementById('perm-prep').checked
+                alerts: getCheck('perm-alerts', true),
+                addEdit: getCheck('perm-add-edit', true),
+                delete: getCheck('perm-delete', false),
+                attendance: getCheck('perm-attendance', true),
+                efteqad: getCheck('perm-efteqad', true),
+                prep: getCheck('perm-prep', true),
+                reports: getCheck('perm-reports', true),
+                whatsapp: getCheck('perm-whatsapp', true)
             };
 
             const existingIdx = window.appData.servants.findIndex(x => x.id === editId);
             if (existingIdx >= 0) {
-                window.appData.servants[existingIdx] = Object.assign(window.appData.servants[existingIdx], { name, pass, phone, role, perms });
+                window.appData.servants[existingIdx] = Object.assign(window.appData.servants[existingIdx], { name, username, pass, phone, whatsapp, role, perms });
             } else {
-                window.appData.servants.push({ id: 'S_' + Date.now(), name, pass, phone, role, active: true, perms });
+                window.appData.servants.push({ id: 's_' + Date.now(), name, username, pass, phone, whatsapp, role, active: true, perms });
             }
 
             resetServantForm();
             window.syncToCloud();
             renderAllViews();
-            refreshLoginDropdown();
+            if (typeof refreshLoginDropdown === 'function') refreshLoginDropdown();
             showToast('تم حفظ بيانات الخادم وصلاحياته سحابياً');
         }
 
