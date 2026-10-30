@@ -467,46 +467,57 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
         </div>
         <input type="text" id="new-servant-whatsapp" placeholder="01xxxxxxxxx" class="p-2.5 rounded-xl border border-slate-200 bg-white w-full">
     </div>
-</div><div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 text-xs">
-    <div class="font-bold text-slate-700 mb-1">صلاحيات الخادم المسموح بها:</div>
+</div>
+
+<!-- قسم الصلاحيات الموحد + صانع الصلاحيات الديناميكي -->
+<div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2.5 text-xs">
+    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <div class="font-bold text-slate-700">صلاحيات الخادم المسموح بها (أساسية ومخصصة):</div>
+        <button type="button" onclick="toggleCustomPermCreator()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-2.5 py-1 rounded-lg text-[11px] font-bold transition">
+            <i class="fa-solid fa-wand-magic-sparkles ml-1"></i> + إنشاء صلاحية جديدة وتفعيلها
+        </button>
+    </div>
+
+    <!-- نافذة إنشاء صلاحية جديدة بدون كود -->
+    <div id="custom-perm-creator" class="hidden bg-slate-50 p-3 rounded-xl border border-indigo-200 space-y-2">
+        <div class="font-bold text-indigo-950 text-[11px]">⚡ إضافة صلاحية جديدة للنظام (تتفعل برمجياً فور إضافتها):</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="text" id="cp-label-input" placeholder="اكتب اسم الصلاحية (مثال: مسح كل المخدومين)" class="p-2 rounded-lg border border-slate-300 bg-white font-bold">
+            <select id="cp-action-type" class="p-2 rounded-lg border border-slate-300 bg-white font-bold">
+                <option value="wipe_all_makhdoom">🔥 تفعيل زر: حذف بيانات المخدومين بالكامل بضغطة زر</option>
+                <option value="backup_json">💾 تفعيل زر: تحميل نسخة احتياطية كاملة للبيانات</option>
+                <option value="qr_scanner">📷 التحكم في ظهور: زر ماسح الـ QR</option>
+                <option value="excel_sheet">📊 التحكم في ظهور: زر شيت الإكسيل الشامل</option>
+                <option value="custom_fields">⚙️ التحكم في ظهور: زر إضافة خانة مخصصة</option>
+                <option value="clear_attendance">🧹 تفعيل زر: تصفير سجل الغياب بالكامل</option>
+            </select>
+        </div>
+        <div class="flex gap-2 justify-end">
+            <button type="button" onclick="addNewDynamicPermission()" class="bg-indigo-900 text-white px-3 py-1.5 rounded-lg font-bold text-[11px]">إضافة وتفعيل في النظام ✅</button>
+            <button type="button" onclick="toggleCustomPermCreator()" class="bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold text-[11px]">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- الصلاحيات الـ 8 الأساسية الموحدة -->
     <div class="grid grid-cols-2 gap-2">
         <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-alerts" checked class="accent-pink-600"> 🔔 رؤية التنبيهات الذكية</label>
         <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-add-edit" checked class="accent-indigo-900"> ➕ إضافة وتعديل مخدومين</label>
-        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-delete" class="accent-indigo-900"> 🗑️ حذف مخدومين</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-delete" class="accent-indigo-900"> 🗑️ حذف مخدومين (فردي)</label>
         <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-attendance" checked class="accent-indigo-900"> 📋 تسجيل الغياب والحضور</label>
         <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-efteqad" checked class="accent-indigo-900"> ❤️ تسجيل الافتقاد والملاحظات</label>
         <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-prep" checked class="accent-indigo-900"> ✝️ إضافة وتعديل التحضير</label>
         <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-reports" checked class="accent-indigo-900"> 📄 سحب تقارير PDF/Excel</label>
         <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-whatsapp" checked class="accent-indigo-900"> 💬 إرسال واتساب جماعي</label>
     </div>
-</div>
-    <div>
-        <label class="block text-slate-700 font-bold mb-1">رقم المكالمات:</label>
-        <input type="text" id="new-servant-phone" placeholder="01xxxxxxxxo" class="p-2.5 rounded-2xl border border-slate-200 bg-white w-full">
-    </div>
-    <div>
-        <label class="block text-slate-700 font-bold mb-1">رقم الواتساب:</label>
-        <input type="text" id="new-servant-whatsapp" placeholder="01xxxxxxxxo" class="p-2.5 rounded-2xl border border-slate-200 bg-white w-full">
-    </div>
+
+    <!-- حاوية الصلاحيات المخصصة التي يضيفها الأدمن -->
+    <div id="dynamic-perms-checkboxes" class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100"></div>
 </div>
 
-<div style="display:none;">
-    <select id="new-servant-role"><option value="admin">مسؤول البرنامج (Admin)</option><option value="servant" selected>خادم</option></select>
+<div class="flex gap-2">
+    <button onclick="saveServantForm()" class="flex-1 bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow hover:bg-indigo-800">حفظ بيانات الخادم 💾</button>
+    <button onclick="resetServantForm()" class="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold">تفريغ</button>
 </div>
-                            </div>
-                            <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 text-xs">
-                                <div class="font-bold text-slate-700 mb-1">صلاحيات الخادم المسموح بها:</div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-alerts" checked class="accent-pink-600"> 🔔 رؤية التنبيهات الذكية</label>
-                                    <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-delete" class="accent-indigo-900"> 🗑️ حذف مخدومين</label>
-                                    <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-reports" checked class="accent-indigo-900"> 📄 سحب تقارير PDF/Excel</label>
-                                    <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-prep" checked class="accent-indigo-900"> 📖 إضافة وتعديل التحضير</label>
-                                </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="saveServantForm()" class="flex-1 bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow">حفظ بيانات الخادم 💾</button>
-                                <button onclick="resetServantForm()" class="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold">تفريغ</button>
-                            </div>
                         </div>
 
                         <!-- إعدادات مدد التنبيه الذكي -->
