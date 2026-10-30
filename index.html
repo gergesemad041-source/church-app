@@ -431,26 +431,34 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- إضافة أو تعديل خادم -->
                         <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
-                            <h3 id="servant-form-title" class="font-extrabold text-indigo-950 text-sm">➕ إضافة خادم جديد وتحديد صلاحياته</h3>
-                        <h3 id="servant-form-title" class="font-extrabold text-indigo-900 text-sm">➕ إضافة خادم جديد وصلاحياته</h3>
+<h3 id="servant-form-title" class="font-extrabold text-indigo-950 text-sm"><i class="fa-solid fa-plus ml-1"></i> إضافة خادم جديد وتحديد صلاحياته</h3>
 <input type="hidden" id="edit-servant-id">
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs mt-2">
-    <div>
-        <label class="block text-slate-700 font-bold mb-1">اسم المستخدم (للدخول بالإنجليزية أو الأرقام):</label>
-        <input type="text" id="new-servant-username" placeholder="مثال: 1234 أو mina" class="p-2.5 rounded-2xl border border-slate-200 bg-white font-bold w-full">
-    </div>
-    <div>
-        <label class="block text-slate-700 font-bold mb-1">اسم الخادم الظاهر (في البرنامج والتقارير):</label>
-        <input type="text" id="new-servant-name" placeholder="مثال: الشماس مينا جرجس" class="p-2.5 rounded-2xl border border-slate-200 bg-white font-bold w-full">
-    </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+    <input type="text" id="new-servant-name" placeholder="اسم الخادم الظاهر (مثال: مينا جرجس)" class="p-2.5 rounded-xl border border-slate-200 bg-white font-bold">
+    <input type="text" id="new-servant-username" placeholder="اسم المستخدم للدخول (Username)" class="p-2.5 rounded-xl border border-slate-200 bg-white font-bold">
+    <input type="text" id="new-servant-pass" placeholder="الرقم السري" class="p-2.5 rounded-xl border border-slate-200 bg-white">
+    <select id="new-servant-role" class="p-2.5 rounded-xl border border-slate-200 bg-white font-bold">
+        <option value="servant">خادم</option>
+        <option value="admin">مسؤول البرنامج (Admin)</option>
+    </select>
+    <input type="text" id="new-servant-phone" placeholder="رقم المكالمات للخادم" class="p-2.5 rounded-xl border border-slate-200 bg-white">
+    <input type="text" id="new-servant-whatsapp" placeholder="رقم الواتساب للخادم" class="p-2.5 rounded-xl border border-slate-200 bg-white">
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs mt-2">
-    <div>
-        <label class="block text-slate-700 font-bold mb-1">كلمة السر:</label>
-        <input type="text" id="new-servant-pass" placeholder="كلمة المرور" class="p-2.5 rounded-2xl border border-slate-200 bg-white w-full">
+<div class="p-3 bg-white rounded-xl border border-slate-200 space-y-2 text-xs">
+    <div class="font-bold text-slate-700 mb-1">صلاحيات الخادم المسموح بها:</div>
+    <div class="grid grid-cols-2 gap-2">
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-alerts" checked class="accent-pink-600"> 🔔 رؤية التنبيهات الذكية</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-add-edit" checked class="accent-indigo-900"> ➕ إضافة وتعديل مخدومين</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-delete" class="accent-indigo-900"> 🗑️ حذف مخدومين</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-attendance" checked class="accent-indigo-900"> 📋 تسجيل الغياب والحضور</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-efteqad" checked class="accent-indigo-900"> ❤️ تسجيل الافتقاد والملاحظات</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-prep" checked class="accent-indigo-900"> ✝️ إضافة وتعديل التحضير</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-reports" checked class="accent-indigo-900"> 📄 سحب تقارير PDF/Excel</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="perm-whatsapp" checked class="accent-indigo-900"> 💬 إرسال واتساب جماعي</label>
     </div>
+</div>
     <div>
         <label class="block text-slate-700 font-bold mb-1">رقم المكالمات:</label>
         <input type="text" id="new-servant-phone" placeholder="01xxxxxxxxo" class="p-2.5 rounded-2xl border border-slate-200 bg-white w-full">
