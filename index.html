@@ -2389,36 +2389,184 @@ function handleExcelImport(e) {
             });
         };
 
+ // محرك الصلاحيات الديناميكي والذكي (بدون الحاجة لكتابة كود)
+        window.toggleCustomPermCreator = function() {
+            const box = document.getElementById('custom-perm-creator');
+            if (box) box.classList.toggle('hidden');
+        };
+
+        window.addNewDynamicPermission = function() {
+            const labelEl = document.getElementById('cp-label-input');
+            const typeEl = document.getElementById('cp-action-type');
+            const label = labelEl ? labelEl.value.trim() : '';
+            const actionType = typeEl ? typeEl.value : '';
+
+            if (!label) { alert('يرجى كتابة اسم الصلاحية أولاً!'); return; }
+
+            window.appData.customPermissions = window.appData.customPermissions || [];
+            const newPermId = 'cp_' + Date.now();
+            window.appData.customPermissions.push({
+                id: newPermId,
+                label: label,
+                actionType: actionType
+            });
+
+            labelEl.value = '';
+            document.getElementById('custom-perm-creator').classList.add('hidden');
+            window.syncToCloud();
+            renderDynamicPermsCheckboxes();
+            if (typeof showToast === 'function') showToast('تم إنشاء الصلاحية وتفعيلها في النظام بنجاح ⚡');
+        };
+
+        window.removeDynamicPermission = function(permId) {
+            if (!confirm('حذف هذه الصلاحية المخصصة من النظام؟')) return;
+            window.appData.customPermissions = (window.appData.customPermissions || []).filter(p => p.id !== permId);
+            window.syncToCloud();
+            renderDynamicPermsCheckboxes();
+            renderServantsManagement();
+        };
+
+        window.renderDynamicPermsCheckboxes = function(selectedPerms = {}) {
+            const container = document.getElementById('dynamic-perms-checkboxes');
+            if (!container) return;
+            const list = window.appData.customPermissions || [];
+            if (list.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = list.map(cp => `
+                <div class="flex items-center justify-between bg-indigo-50/60 px-2 py-1 rounded-lg border border-indigo-100">
+                    <label class="flex items-center gap-1.5 font-bold text-indigo-950 cursor-pointer">
+                        <input type="checkbox" class="dyn-perm-check accent-indigo-900" data-perm-id="${cp.id}" ${selectedPerms[cp.id] ? 'checked' : ''}>
+                        ⚡ ${cp.label}
+                    </label>
+                    <button type="button" onclick="removeDynamicPermission('${cp.id}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-1" title="حذف الصلاحية">✖</button>
+                </div>
+            `).join('');
+        };
+
+        // تنفيذ المهام البرمجية الفورية للصلاحيات المخصصة
+        window.executeDynamicPermAction = function(actionType, label) {
+            if (actionType === 'wipe_all_makhdoom') {
+                if (!confirm(`⚠️ تحذير خطير (${label}): هل أنت متأكد من حذف جميع بيانات المخدومين بالكامل؟ لا يمكن التراجع!`)) return;
+                window.appData.makhdoom = [];
+                window.lastCloudMakhdoomCount = 0;
+                window.syncToCloud(true);
+                renderAllViews();
+                showToast('تم حذف جميع بيانات المخدومين بالكامل 🗑️');
+            } else if (actionType === 'clear_attendance') {
+                if (!confirm(`هل أنت متأكد من تصفير سجل الغياب بالكامل (${label})؟`)) return;
+                window.appData.attendance = {};
+                window.syncToCloud();
+                renderAllViews();
+                showToast('تم تصفير سجل الغياب بنجاح 🧹');
+            } else if (actionType === 'backup_json') {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.appData, null, 2));
+                const dlAnchor = document.createElement('a');
+                dlAnchor.setAttribute("href", dataStr);
+                dlAnchor.setAttribute("download", "church_backup_" + new Date().toISOString().slice(0,10) + ".json");
+                document.body.appendChild(dlAnchor);
+                dlAnchor.click();
+                dlAnchor.remove();
+                showToast('تم تحميل النسخة الاحتياطية بنجاح 💾');
+            }
+        };
+
+        // تطبيق كل الصلاحيات (الـ 8 الأساسية + المخصصة) فعلياً على الشاشة والأزرار
+        window.applyActiveServantPermissions = function() {
+            const servant = window.currentLoggedInServant;
+            if (!servant) return;
+            const isAdmin = servant.role === 'admin';
+            const p = servant.perms || {};
+
+            const setVis = (selector, show) => {
+                document.querySelectorAll(selector).forEach(el => el.style.display = show ? '' : 'none');
+            };
+
+            // 1. تفعيل الـ 8 صلاحيات الأساسية فعلياً
+            setVis('#smart-alerts-radar, [onclick*="filterByAlert"]', isAdmin || p.alerts !== false);
+            setVis('[onclick*="openAddMakhdoomModal"], [onclick*="excel-modal"], [onclick*="custom-fields-modal"], [onclick*="editMakhdoom"]', isAdmin || p.addEdit !== false);
+            setVis('[onclick*="deleteMakhdoom"]', isAdmin || !!p.delete);
+            setVis('#nav-btn-attendance', isAdmin || p.attendance !== false);
+            setVis('#nav-btn-efteqad, [onclick*="quickRecord"]', isAdmin || p.efteqad !== false);
+            setVis('#nav-btn-prep', isAdmin || p.prep !== false);
+            setVis('[onclick*="openReportModal"]', isAdmin || p.reports !== false);
+            setVis('[onclick*="openBulkWhatsAppModal"]', isAdmin || p.whatsapp !== false);
+
+            // 2. تفعيل الصلاحيات المخصصة التي أنشأها الأدمن
+            const customPerms = window.appData.customPermissions || [];
+            const actionButtons = [];
+
+            customPerms.forEach(cp => {
+                const hasPerm = isAdmin || !!p[cp.id];
+                if (cp.actionType === 'qr_scanner') {
+                    setVis('[onclick*="qr-scanner-modal"]', hasPerm);
+                } else if (cp.actionType === 'excel_sheet') {
+                    setVis('[onclick*="excel-modal"]', hasPerm);
+                } else if (cp.actionType === 'custom_fields') {
+                    setVis('[onclick*="custom-fields-modal"]', hasPerm);
+                } else if (['wipe_all_makhdoom', 'clear_attendance', 'backup_json'].includes(cp.actionType) && hasPerm) {
+                    const btnColor = cp.actionType === 'wipe_all_makhdoom' ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-indigo-900 hover:bg-indigo-800 text-white';
+                    actionButtons.push(`
+                        <button onclick="executeDynamicPermAction('${cp.actionType}', '${cp.label}')" class="${btnColor} px-3 py-1.5 rounded-xl font-bold text-xs shadow transition">
+                            ⚡ ${cp.label}
+                        </button>
+                    `);
+                }
+            });
+
+            // عرض شريط أزرار المهام الخاصة في أعلى التطبيق للخادم المصرح له
+            let topActionBar = document.getElementById('global-custom-actions-bar');
+            if (!topActionBar) {
+                const appCont = document.getElementById('app-container');
+                if (appCont) {
+                    topActionBar = document.createElement('div');
+                    topActionBar.id = 'global-custom-actions-bar';
+                    topActionBar.className = 'max-w-7xl mx-auto px-4 pt-2 flex flex-wrap gap-2 empty:hidden';
+                    appCont.insertBefore(topActionBar, appCont.children[1]);
+                }
+            }
+            if (topActionBar) {
+                topActionBar.innerHTML = actionButtons.join('');
+            }
+        };
+
         // إدارة الخدام والصلاحيات وإيقاف الحساب مؤقتاً وتعديل الخادم
         function renderServantsManagement() {
+            renderDynamicPermsCheckboxes();
             const tbody = document.getElementById('servants-list-tbody');
             if (!tbody) return;
+            const customPerms = window.appData.customPermissions || [];
+
             tbody.innerHTML = window.appData.servants.map(s => {
                 const isActive = s.active !== false;
                 const p = s.perms || {};
+                const customBadges = customPerms.filter(cp => p[cp.id]).map(cp => `⚡ ${cp.label}`);
+
                 const permsBadges = s.role === 'admin'
                     ? '<span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-bold">كامل الصلاحيات (Admin)</span>'
                     : [
-                        p.alerts ? '🔔 التنبيهات' : '',
-                        p.addEdit ? '➕ إضافة/تعديل' : '',
+                        p.alerts !== false ? '🔔 التنبيهات' : '',
+                        p.addEdit !== false ? '➕ إضافة/تعديل' : '',
                         p.delete ? '🗑️ الحذف' : '',
-                        p.attendance ? '📋 الغياب' : '',
-                        p.efteqad ? '❤️ الافتقاد' : '',
-                        p.prep ? '✝️ التحضير' : '',
-                        p.reports ? '📄 التقارير' : '',
-                        p.whatsapp ? '💬 واتساب' : ''
+                        p.attendance !== false ? '📋 الغياب' : '',
+                        p.efteqad !== false ? '❤️ الافتقاد' : '',
+                        p.prep !== false ? '✝️ التحضير' : '',
+                        p.reports !== false ? '📄 التقارير' : '',
+                        p.whatsapp !== false ? '💬 واتساب' : '',
+                        ...customBadges
                     ].filter(Boolean).map(t => `<span class="bg-slate-100 px-2 py-0.5 rounded inline-block m-0.5">${t}</span>`).join(' ');
 
                 const loginUser = s.username || s.name;
                 const phoneHtml = s.phone ? `
                     <div class="flex items-center gap-1 mt-1 text-[11px] text-slate-600">
                         <span>📞 ${s.phone}</span>
-                        <button onclick="copyServantText('${s.phone}', 'رقم المكالمات')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-bold" title="نسخ رقم المكالمات">نسخ 📋</button>
+                        <button onclick="copyServantText('${s.phone}', 'رقم المكالمات')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-bold">نسخ 📋</button>
                     </div>` : '';
                 const waHtml = s.whatsapp ? `
                     <div class="flex items-center gap-1 mt-1 text-[11px] text-emerald-700">
                         <span>💬 ${s.whatsapp}</span>
-                        <button onclick="copyServantText('${s.whatsapp}', 'رقم الواتساب')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded text-[10px] font-bold" title="نسخ رقم الواتساب">نسخ 📋</button>
+                        <button onclick="copyServantText('${s.whatsapp}', 'رقم الواتساب')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded text-[10px] font-bold">نسخ 📋</button>
                     </div>` : '';
 
                 return `
@@ -2447,6 +2595,10 @@ function handleExcelImport(e) {
                     </tr>
                 `;
             }).join('');
+
+            if (typeof window.applyActiveServantPermissions === 'function') {
+                window.applyActiveServantPermissions();
+            }
         }
 
         function editServantForm(sId) {
@@ -2473,6 +2625,8 @@ function handleExcelImport(e) {
             setCheck('perm-prep', p.prep !== false);
             setCheck('perm-reports', p.reports !== false);
             setCheck('perm-whatsapp', p.whatsapp !== false);
+
+            renderDynamicPermsCheckboxes(p);
         }
 
         function resetServantForm() {
@@ -2496,6 +2650,8 @@ function handleExcelImport(e) {
             setCheck('perm-prep', true);
             setCheck('perm-reports', true);
             setCheck('perm-whatsapp', true);
+
+            renderDynamicPermsCheckboxes({});
         }
 
         function saveServantForm() {
@@ -2523,6 +2679,12 @@ function handleExcelImport(e) {
                 whatsapp: getCheck('perm-whatsapp', true)
             };
 
+            // قراءة الصلاحيات المخصصة
+            document.querySelectorAll('.dyn-perm-check').forEach(chk => {
+                const pid = chk.getAttribute('data-perm-id');
+                if (pid) perms[pid] = chk.checked;
+            });
+
             const existingIdx = window.appData.servants.findIndex(x => x.id === editId);
             if (existingIdx >= 0) {
                 window.appData.servants[existingIdx] = Object.assign(window.appData.servants[existingIdx], { name, username, pass, phone, whatsapp, role, perms });
@@ -2536,7 +2698,6 @@ function handleExcelImport(e) {
             if (typeof refreshLoginDropdown === 'function') refreshLoginDropdown();
             showToast('تم حفظ بيانات الخادم وصلاحياته سحابياً');
         }
-
         function toggleServantActive(sId) {
             const s = window.appData.servants.find(x => x.id === sId);
             if (s) {
