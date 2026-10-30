@@ -1039,39 +1039,56 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
             if (currentVal) sel.value = currentVal;
         }
 
-       function handleLogin() {
-    const userInput = document.getElementById('login-user').value.trim().toLowerCase();
-    const pass = document.getElementById('login-pass').value.trim();
+  function handleLogin() {
+            const userInput = document.getElementById('login-user').value.trim().toLowerCase();
+            const pass = document.getElementById('login-pass').value.trim();
 
-    if (!userInput || !pass) {
-        alert('يرجى إدخال اسم المستخدم وكلمة المرور!');
-        return;
-    }
+            if (!userInput || !pass) {
+                alert('يرجى إدخال اسم المستخدم وكلمة المرور');
+                return;
+            }
 
-    const servant = window.appData.servants.find(s => {
-        const sUser = (s.username || '').trim().toLowerCase();
-        const sName = (s.name || '').trim().toLowerCase();
-        const isAdminAlias = (s.role === 'admin' && userInput === 'admin');
-        return (sUser === userInput || sName === userInput || isAdminAlias) && String(s.pass) === String(pass);
-    });
+            const servant = window.appData.servants.find(s => {
+                // الاعتماد على اسم المستخدم (Username) فقط في الدخول (أو admin لحساب المسؤول الرئيسي)
+                const sUser = (s.username || '').trim().toLowerCase();
+                const isAdminAlias = (s.role === 'admin' && !s.username && userInput === 'admin');
+                const fallbackOldAccount = (!s.username && (s.name || '').trim().toLowerCase() === userInput);
+                return (sUser === userInput || isAdminAlias || fallbackOldAccount) && String(s.pass) === String(pass);
+            });
 
-    if (!servant) {
-        alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
-        return;
-    }
+            if (!servant) {
+                alert('اسم المستخدم أو كلمة المرور غير صحيحة');
+                return;
+            }
 
-    if (servant.active === false) {
-        alert('عذراً، هذا الحساب موقوف مؤقتاً بواسطة مسؤول البرنامج!');
-        return;
-    }
+            if (servant.active === false) {
+                alert('عذراً، هذا الحساب موقوف مؤقتاً بواسطة مسؤول البرنامج');
+                return;
+            }
 
-    window.currentLoggedInServant = servant;
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('app-container').classList.remove('hidden');
-    document.getElementById('current-user-display').innerText = `الخادم: ${servant.name}`;
-    document.getElementById('nav-btn-admin').style.display = servant.role === 'admin' ? 'flex' : 'none';
-    renderAllViews();
-}
+            window.currentLoggedInServant = servant;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            // إظهار (اسم الخادم الظاهر) في الشريط العلوي وليس اسم المستخدم
+            document.getElementById('current-user-display').innerText = `الخادم: ${servant.name}`;
+            document.getElementById('nav-btn-admin').style.display = servant.role === 'admin' ? 'flex' : 'none';
+
+            // تطبيق الصلاحيات الـ 8 على عناصر الواجهة فور الدخول
+            const isAdmin = servant.role === 'admin';
+            const p = servant.perms || {};
+            const toggleEl = (selector, show) => {
+                document.querySelectorAll(selector).forEach(el => el.style.display = show ? '' : 'none');
+            };
+            toggleEl('[onclick*="openReportModal"]', isAdmin || p.reports !== false);
+            toggleEl('[onclick*="openBulkWhatsAppModal"]', isAdmin || p.whatsapp !== false);
+            toggleEl('[onclick*="openAddMakhdoomModal"], [onclick*="excel-modal"], [onclick*="custom-fields-modal"]', isAdmin || p.addEdit !== false);
+            toggleEl('#nav-btn-attendance', isAdmin || p.attendance !== false);
+            toggleEl('#nav-btn-efteqad', isAdmin || p.efteqad !== false);
+            toggleEl('#nav-btn-prep', isAdmin || p.prep !== false);
+
+            renderAllViews();
+        }
         function logout() {
             window.currentLoggedInServant = null;
             document.getElementById('app-container').classList.add('hidden');
