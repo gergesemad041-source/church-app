@@ -45,21 +45,54 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const mainDocRef = doc(db, "church_service_data", "master_state_v1");
+const mainDocRef = doc(db, "church_service_data", "master_state_v1");
+        const backupDocRef = doc(db, "church_service_data", "master_backup_safe");
 
         window.cloudConnected = false;
+        window.initialCloudLoadDone = false;
+        window.lastCloudMakhdoomCount = 0;
 
-        window.syncToCloud = async function() {
+        window.syncToCloud = async function(forceEmpty = false) {
+            // 1. منع الحفظ تماماً قبل التأكد من استلام البيانات الحقيقية من السيرفر أولاً
+            if (!window.cloudConnected || !window.initialCloudLoadDone) {
+                console.warn("تم منع الحفظ التلقائي لحين اكتمال التحميل من السحابة لحماية البيانات.");
+                return;
+            }
+
+            const currentMakhdoomCount = (window.appData && Array.isArray(window.appData.makhdoom)) ? window.appData.makhdoom.length : 0;
+
+            // 2. درع الحماية ضد المسح الصفري: لو السحابة كان فيها مخدومين وفجأة الموبايل بيبعت صفر مخدومين، ارفض الحفظ فوراً!
+            if (window.lastCloudMakhdoomCount > 0 && currentMakhdoomCount === 0 && !forceEmpty) {
+                console.error("درع الحماية: تم منع مسح بيانات المخدومين عن طريق الخطأ!");
+                return;
+            }
+
             localStorage.setItem('church_app_backup_v1', JSON.stringify(window.appData));
             const statusBadge = document.getElementById('cloud-sync-badge');
-            if (!window.cloudConnected) return;
+
             try {
                 if (statusBadge) statusBadge.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> جاري الحفظ سحابياً...';
+                const payloadStr = JSON.stringify(window.appData);
+                const nowTime = Date.now();
+                const currentUserName = window.currentLoggedInServant ? window.currentLoggedInServant.name : 'System';
+
                 await setDoc(mainDocRef, {
-                    payload: JSON.stringify(window.appData),
-                    updatedAt: Date.now(),
-                    updatedBy: window.currentLoggedInServant ? window.currentLoggedInServant.name : 'System'
+                    payload: payloadStr,
+                    updatedAt: nowTime,
+                    updatedBy: currentUserName
                 });
+
+                // 3. حفظ نسخة احتياطية أوتوماتيكية في مسار مستقل كلما كانت البيانات تحتوي على مخدومين
+                if (currentMakhdoomCount > 0) {
+                    window.lastCloudMakhdoomCount = currentMakhdoomCount;
+                    setDoc(backupDocRef, {
+                        payload: payloadStr,
+                        updatedAt: nowTime,
+                        updatedBy: currentUserName,
+                        count: currentMakhdoomCount
+                    }).catch(() => {});
+                }
+
                 if (statusBadge) statusBadge.innerHTML = '<i class="fa-solid fa-cloud-check text-emerald-300"></i> متصل ومحدث لحظياً ⚡';
             } catch (err) {
                 console.error("Cloud Sync Write Error:", err);
@@ -69,21 +102,39 @@
 
         signInAnonymously(auth).then(() => {
             window.cloudConnected = true;
-            onSnapshot(mainDocRef, (docSnap) => {
+            onSnapshot(mainDocRef, { includeMetadataChanges: true }, (docSnap) => {
                 const statusBadge = document.getElementById('cloud-sync-badge');
+
+                // تجاهل القراءة الفارغة لو جاية من كاش الموبايل قبل الاتصال الفعلي بالسيرفر
+                if (!docSnap.exists() && docSnap.metadata.fromCache) {
+                    return;
+                }
+
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     if (data && data.payload) {
                         const incoming = JSON.parse(data.payload);
+                        const incomingCount = (incoming.makhdoom && Array.isArray(incoming.makhdoom)) ? incoming.makhdoom.length : 0;
+
+                        // حماية إضافية: لو السيرفر بعت داتا مصفّرة بالغلط وعندنا داتا محلية، لا تمسح المحلية
+                        if (incomingCount === 0 && window.lastCloudMakhdoomCount > 0) {
+                            console.warn("تم تجاهل تحديث فارغ لحماية البيانات الحالية.");
+                            return;
+                        }
+
+                        window.lastCloudMakhdoomCount = incomingCount;
                         window.appData = Object.assign(window.appData, incoming);
                         localStorage.setItem('church_app_backup_v1', JSON.stringify(window.appData));
+                        window.initialCloudLoadDone = true;
+
                         if (typeof window.refreshUIOnCloudUpdate === 'function') {
                             window.refreshUIOnCloudUpdate();
                         }
                     }
                     if (statusBadge) statusBadge.innerHTML = '<i class="fa-solid fa-cloud text-emerald-300"></i> متصل بالسحابة اللحظية ⚡';
                 } else {
-                    window.syncToCloud();
+                    // السحابة فارغة فعلياً على السيرفر (أول مرة تشغيل على الإطلاق)
+                    window.initialCloudLoadDone = true;
                 }
             });
         }).catch((err) => {
