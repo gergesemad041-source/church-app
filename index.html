@@ -1051,6 +1051,10 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
         }
 
   function handleLogin() {
+            if (!navigator.onLine) {
+                alert('⚠️ لا يمكن تسجيل الدخول! يرجى التأكد من اتصالك بالإنترنت أولاً.');
+                return;
+            }
             const userInput = document.getElementById('login-user').value.trim().toLowerCase();
             const pass = document.getElementById('login-pass').value.trim();
 
