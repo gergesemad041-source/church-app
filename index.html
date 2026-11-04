@@ -1047,11 +1047,7 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
         let html5QrScanner = null;
         let currentScannerActionMode = 'attendance';
 
-        const savedLocal = localStorage.getItem('church_app_backup_v1');
-        if (savedLocal) {
-            try { Object.assign(window.appData, JSON.parse(savedLocal)); } catch(e) {}
-        }
-
+      
         function showToast(msg) {
             const box = document.getElementById('toast-box');
             document.getElementById('toast-msg').innerText = msg;
