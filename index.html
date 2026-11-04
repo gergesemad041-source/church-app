@@ -67,7 +67,10 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
                 return;
             }
 
-            localStorage.setItem('church_app_backup_v1', JSON.stringify(window.appData));
+           if (!navigator.onLine) {
+                if (typeof window.enforceOnlineOnlyMode === 'function') window.enforceOnlineOnlyMode();
+                return;
+            }
             const statusBadge = document.getElementById('cloud-sync-badge');
 
             try {
@@ -96,7 +99,7 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
                 if (statusBadge) statusBadge.innerHTML = '<i class="fa-solid fa-cloud-check text-emerald-300"></i> متصل ومحدث لحظياً ⚡';
             } catch (err) {
                 console.error("Cloud Sync Write Error:", err);
-                if (statusBadge) statusBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-300"></i> محفوظ محلياً';
+               if (statusBadge) statusBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> تعذر الحفظ (تحقق من الإنترنت)';
             }
         };
 
