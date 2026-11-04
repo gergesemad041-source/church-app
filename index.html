@@ -144,17 +144,37 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
         }).catch((err) => {
             console.error("Auth Error:", err);
         });
-// 🛑 نظام الحماية الصارم: العمل أونلاين فقط ومنع أي حفظ محلي أو تصفح بدون إنترنت
-        window.enforceOnlineOnlyMode = function() {
+// 🛑 نظام الحماية الصارم: فحص الإنترنت الحقيقي (وليس الواي فاي الوهمي) ومنع الكاش
+        window.isActuallyOnline = navigator.onLine;
+
+        window.checkRealInternet = async function() {
+            if (!navigator.onLine) {
+                window.isActuallyOnline = false;
+                window.enforceOnlineOnlyMode(true);
+                return false;
+            }
+            try {
+                // إرسال نبضة سريعة لجوجل للتأكد من وجود إنترنت حقيقي في الراوتر
+                await fetch('https://www.gstatic.com/generate_204', { mode: 'no-cors', cache: 'no-store' });
+                window.isActuallyOnline = true;
+                window.enforceOnlineOnlyMode(false);
+                return true;
+            } catch (e) {
+                window.isActuallyOnline = false;
+                window.enforceOnlineOnlyMode(true);
+                return false;
+            }
+        };
+
+        window.enforceOnlineOnlyMode = function(forceLock = false) {
             // مسح أي داتا محلية قديمة مخزنة في المتصفح نهائياً
             localStorage.removeItem('church_app_backup_v1');
 
-            // إنشاء شاشة القفل الكاملة إذا لم تكن موجودة
             let lockOverlay = document.getElementById('offline-lock-overlay');
             if (!lockOverlay && document.body) {
                 lockOverlay = document.createElement('div');
                 lockOverlay.id = 'offline-lock-overlay';
-                lockOverlay.style.cssText = 'position:fixed; inset:0; background:rgba(15, 23, 42, 0.92); backdrop-filter:blur(6px); z-index:999999; display:none; align-items:center; justify-content:center; padding:20px; text-align:center; direction:rtl;';
+                lockOverlay.style.cssText = 'position:fixed; inset:0; background:rgba(15, 23, 42, 0.95); backdrop-filter:blur(6px); z-index:999999; display:none; align-items:center; justify-content:center; padding:20px; text-align:center; direction:rtl;';
                 lockOverlay.innerHTML = `
                     <div style="background:white; max-width:420px; width:100%; padding:30px 24px; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); border:3px solid #f43f5e;">
                         <div style="width:70px; height:70px; background:#ffe4e6; color:#e11d48; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:32px;">
@@ -163,7 +183,7 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
                         <h2 style="color:#1e1b4b; font-size:20px; font-weight:900; margin-bottom:10px;">انقطع الاتصال بالإنترنت! ⚠️</h2>
                         <p style="color:#475569; font-size:13px; font-weight:bold; line-height:1.7; margin-bottom:18px;">
                             لحماية بيانات الخدمة من التضارب، تم إيقاف التعديلات والتنقل داخل الموقع مؤقتاً.<br>
-                            <span style="color:#e11d48;">لن يتم حفظ أي بيانات محلياً على الجهاز.</span>
+                            <span style="color:#e11d48;">الموقع يعمل بنظام الأونلاين اللحظي فقط.</span>
                         </p>
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px; font-size:12px; color:#334155; font-weight:bold;">
                             🔄 ستختفي هذه الرسالة تلقائياً وتعود للعمل فور رجوع الإنترنت...
@@ -174,8 +194,9 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
             }
 
             const statusBadge = document.getElementById('cloud-sync-badge');
+            const isOffline = forceLock || !navigator.onLine || !window.isActuallyOnline;
 
-            if (!navigator.onLine) {
+            if (isOffline) {
                 if (lockOverlay) lockOverlay.style.display = 'flex';
                 if (statusBadge) {
                     statusBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> غير متصل بالإنترنت (متوقف مؤقتاً)';
@@ -188,9 +209,12 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
             }
         };
 
-        window.addEventListener('offline', window.enforceOnlineOnlyMode);
-        window.addEventListener('online', window.enforceOnlineOnlyMode);
-        window.addEventListener('DOMContentLoaded', window.enforceOnlineOnlyMode);
+        window.addEventListener('offline', () => window.enforceOnlineOnlyMode(true));
+        window.addEventListener('online', () => window.checkRealInternet());
+        window.addEventListener('DOMContentLoaded', () => {
+            window.checkRealInternet();
+            setInterval(window.checkRealInternet, 4000); // فحص نبض الإنترنت الحقيقي كل 4 ثوانٍ
+        });
     </script>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
