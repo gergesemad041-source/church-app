@@ -109,7 +109,9 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
                 const statusBadge = document.getElementById('cloud-sync-badge');
 
                 // تجاهل القراءة الفارغة لو جاية من كاش الموبايل قبل الاتصال الفعلي بالسيرفر
-                if (!docSnap.exists() && docSnap.metadata.fromCache) {
+              // منع العمل من كاش المتصفح نهائياً إذا لم يكن متصلاً بالسيرفر الفعلي
+                if (docSnap.metadata.fromCache && !navigator.onLine) {
+                    if (typeof window.enforceOnlineOnlyMode === 'function') window.enforceOnlineOnlyMode(true);
                     return;
                 }
 
