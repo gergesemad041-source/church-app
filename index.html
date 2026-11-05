@@ -1676,14 +1676,15 @@ function openMakhdoomLocation(makhdoomId) {
                                     <button onclick="openQRCardModal('${m.id}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-2.5 py-1.5 rounded-xl text-xs font-black" title="بطاقة QR">
                                         <i class="fa-solid fa-qrcode"></i> QR
                                     </button>
-                                    ${m.phone ? `<a href="tel:${m.phone}" class="bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-xl text-xs font-bold" title="اتصال"><i class="fa-solid fa-phone"></i></a>` : ''}
-                                    ${m.phone ? `<a href="https://wa.me/2${m.phone.replace(/\D/g,'')}" target="_blank" class="bg-emerald-100 text-emerald-700 px-2.5 py-1.5 rounded-xl text-xs font-bold" title="واتساب"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+                                  ${m.phone ? `<a href="tel:${m.phone}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-xl text-xs font-bold" title="اتصال هاتفي"><i class="fa-solid fa-phone"></i></a>` : ''}
+${(m.whatsapp || m.phone) ? `<a href="https://wa.me/2${(m.whatsapp || m.phone).replace(/\D/g,'')}" target="_blank" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-2.5 py-1.5 rounded-xl text-xs font-bold" title="مراسلة واتساب"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
                                     ${m.location ? `<a href="${m.location}" target="_blank" class="bg-sky-100 text-sky-700 px-2.5 py-1.5 rounded-xl text-xs font-bold" title="فتح اللوكيشن"><i class="fa-solid fa-location-dot"></i></a>` : ''}
                                 </div>
                             </div>
                             ${badgesHtml ? `<div class="flex flex-wrap gap-1">${badgesHtml}</div>` : ''}
                             <div class="text-xs text-slate-600 space-y-1 bg-slate-50 p-3 rounded-2xl">
-                                <p><strong>📞 التليفون:</strong> ${m.phone || '—'}</p>
+            <p><strong>📞 التليفون:</strong> ${m.phone || '-'}</p>
+<p><strong>💬 الواتساب:</strong> ${m.whatsapp || m.phone || '-'}</p>
                                 <p><strong>🏠 العنوان:</strong> ${m.address || '—'}</p>
                                 <p><strong>🧑‍💼 الخادم المسؤول:</strong> ${m.servant || '—'}</p>
                                 <p><strong>🎂 تاريخ الميلاد:</strong> ${m.birthDate || '—'}</p>
