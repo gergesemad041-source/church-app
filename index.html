@@ -1084,7 +1084,50 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
             box.classList.remove('hidden');
             setTimeout(() => box.classList.add('hidden'), 3000);
         }
+function openMakhdoomLocation(makhdoomId) {
+    const person = (window.appData.makhdoom || []).find(m => m.id === makhdoomId);
+    const loc = person && person.location ? person.location.trim() : '';
 
+    // في حالة عدم وجود لوكيشن مسجل: إظهار نافذة كبيرة مع زر إغلاق
+    if (!loc) {
+        let modal = document.getElementById('no-location-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'no-location-modal';
+            modal.style.cssText = 'position:fixed; inset:0; background:rgba(15, 23, 42, 0.75); backdrop-filter:blur(4px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px; direction:rtl; text-align:center;';
+            modal.innerHTML = `
+                <div style="background:white; max-width:400px; width:100%; padding:30px 24px; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.4); border:2px solid #e2e8f0; animation:fadeIn 0.2s ease-in-out;">
+                    <div style="width:72px; height:72px; background:#fef2f2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:34px;">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <h3 style="color:#1e1b4b; font-size:20px; font-weight:900; margin-bottom:10px;">لم يتم تسجيل لوكيشن حتى الآن</h3>
+                    <p style="color:#64748b; font-size:14px; font-weight:bold; margin-bottom:24px; line-height:1.6;">
+                        يرجى إضافة رابط الموقع الجغرافي في بيانات هذا المخدوم أولاً لتتمكن من فتح المسار على الخريطة.
+                    </p>
+                    <button onclick="document.getElementById('no-location-modal').style.display='none'" style="background:#1e1b4b; color:white; width:100%; padding:12px; border-radius:14px; font-size:15px; font-weight:900; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(30,27,75,0.2);">
+                        إغلاق
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        } else {
+            modal.style.display = 'flex';
+        }
+        return;
+    }
+
+    // في حالة وجود لوكيشن: فتح Google Maps ورسم المسار من موقع الخادم لبيت المخدوم
+    let mapsUrl = '';
+    if (loc.startsWith('http://') || loc.startsWith('https://')) {
+        // لو كان رابط جوجل ماب جاهز
+        mapsUrl = loc;
+    } else {
+        // لو كان إحداثيات أو عنوان، يفتح وضع رسم المسار (Directions) تلقائياً من موقع الخادم الحالي
+        mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(loc);
+    }
+    window.open(mapsUrl, '_blank');
+}
+        
         window.addEventListener('DOMContentLoaded', () => {
             initDateSelectors();
             document.getElementById('attendance-date-picker').valueAsDate = new Date();
