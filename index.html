@@ -1551,7 +1551,7 @@ window.refreshUIOnCloudUpdate = function() {
         function saveMakhdoomData() {
             const editId = document.getElementById('edit-makhdoom-id').value;
             const name = document.getElementById('m-name').value.trim();
-            const phone = document.getElementById('m-phone').value.trim();
+          const whatsapp = document.getElementById('m-whatsapp').value.trim() || phone;
             if (!name) { alert('يرجى إدخال اسم المخدوم'); return; }
 
             if (!editId) {
@@ -1589,6 +1589,7 @@ window.refreshUIOnCloudUpdate = function() {
                 name,
                 class: document.getElementById('m-class').value.trim(),
                 phone,
+                whatsapp,
                 servant: document.getElementById('m-servant').value,
                 address: document.getElementById('m-address').value.trim(),
                 location: document.getElementById('m-location').value.trim(),
@@ -2168,7 +2169,7 @@ ${(m.whatsapp || m.phone) ? `<a href="https://wa.me/2${(m.whatsapp || m.phone).r
 
         function getStandardExcelHeaders() {
             return [
-                "اسم المخدوم", "الفصل", "التليفون", "العنوان", "الخادم المسؤول",
+           "اسم المخدوم", "الفصل", "التليفون", "الواتساب", "العنوان", "الخادم المسؤول",
                 "تاريخ الميلاد (يوم/شهر/سنة)", "أب الاعتراف", "تاريخ آخر افتقاد",
                 "تاريخ آخر تناول", "تاريخ آخر اعتراف", "ملاحظات وتنبيهات الخادم",
                 ...(window.appData.customFields || [])
@@ -2178,7 +2179,7 @@ ${(m.whatsapp || m.phone) ? `<a href="https://wa.me/2${(m.whatsapp || m.phone).r
         function downloadExcelTemplate() {
             const headers = getStandardExcelHeaders();
             const sampleRow = [
-                "مينا عادل عريان", "أولى ثانوي", "01200000000", "شبرا - القاهرة", "أبانوب صبحي",
+              "مينا عادل فوزي", "أولى ثانوي", "01200000000", "01200000000", "شبرا - القاهرة", "أبانوب صبحي",
                 "15 / 10 / 2010", "أبونا موسى", "2026-10-15", "2026-10-20", "2026-10-01", "يحتاج متابعة تليفونية",
                 ...(window.appData.customFields || []).map(() => "")
             ];
@@ -2191,7 +2192,7 @@ ${(m.whatsapp || m.phone) ? `<a href="https://wa.me/2${(m.whatsapp || m.phone).r
         function exportCurrentListExcel() {
             const headers = getStandardExcelHeaders();
             const rows = window.appData.makhdoom.map(m => [
-                m.name || '', m.class || '', m.phone || '', m.address || '', m.servant || '',
+           m.name || '', m.class || '', m.phone || '', m.whatsapp || m.phone || '', m.address || '', m.servant || '',
                 m.birthDate || '', m.confessor || '', formatEgyptianDate(m.lastEfteqad),
                 formatEgyptianDate(m.communion), formatEgyptianDate(m.confession),
                 (m.notesHistory || []).map(n => `${n.date}: ${n.note}`).join(' | '),
@@ -2289,6 +2290,7 @@ function handleExcelImport(e) {
         json.forEach(row => {
             const name = String(row["اسم المخدوم"] || row["الاسم"] || "").trim();
             const phone = String(row["التليفون"] || row["رقم التليفون"] || "").trim();
+            const whatsapp = String(row["الواتساب"] || row["رقم الواتساب"] || row["واتساب"] || phone || "").trim();
             if (!name) return;
 
             const normName = name.replace(/\s+/g, ' ');
@@ -2309,6 +2311,7 @@ function handleExcelImport(e) {
                 name: normName,
                 class: String(row["الفصل"] || "").trim(),
                 phone,
+                whatsapp,
                 address: String(row["العنوان"] || "").trim(),
                 servant: String(row["الخادم المسؤول"] || "").trim(),
                 birthDate: parseExcelDate(row["تاريخ الميلاد (يوم/شهر/سنة)"] || row["تاريخ الميلاد"] || ""),
