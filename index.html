@@ -1140,12 +1140,20 @@ function openMakhdoomLocation(makhdoomId) {
             refreshLoginDropdown();
         });
 
-        window.refreshUIOnCloudUpdate = function() {
-            refreshLoginDropdown();
-            if (window.currentLoggedInServant) {
-                renderAllViews();
+window.refreshUIOnCloudUpdate = function() {
+    // نسخ رقم التليفون لخانة الواتساب تلقائياً لأي بيانات قديمة ليس لها رقم واتساب
+    if (window.appData && Array.isArray(window.appData.makhdoom)) {
+        window.appData.makhdoom.forEach(m => {
+            if (!m.whatsapp && m.phone) {
+                m.whatsapp = m.phone;
             }
-        };
+        });
+    }
+    refreshLoginDropdown();
+    if (window.currentLoggedInServant) {
+        renderAllViews();
+    }
+};
 
         function initDateSelectors() {
             const daySel = document.getElementById('m-b-day');
