@@ -1555,6 +1555,7 @@ window.refreshUIOnCloudUpdate = function() {
         function saveMakhdoomData() {
             const editId = document.getElementById('edit-makhdoom-id').value;
             const name = document.getElementById('m-name').value.trim();
+            const phone = document.getElementById('m-phone').value.trim();
           const whatsapp = document.getElementById('m-whatsapp').value.trim() || phone;
             if (!name) { alert('يرجى إدخال اسم المخدوم'); return; }
 
