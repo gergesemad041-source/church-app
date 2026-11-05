@@ -294,7 +294,13 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
             </div>
         </header>
 
-        <!-- شريط الرادار الذكي وأعياد الميلاد -->
+
+        <!-- المحتوى الرئيسي للتبويبات -->
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 space-y-6">
+
+            <!-- تبويب 1: سجل المخدومين -->
+            <div id="tab-makhdoom" class="tab-content active space-y-4">
+                        <!-- شريط الرادار الذكي وأعياد الميلاد -->
         <div class="max-w-7xl w-full mx-auto px-4 pt-4 space-y-3">
             <!-- رادار التنبيهات الذكية (يظهر حسب الصلاحية) -->
             <div id="smart-alerts-banner" class="bg-white rounded-2xl p-4 shadow-sm border border-rose-200 hidden">
@@ -345,12 +351,6 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
                 <div id="bday-results-list" class="flex flex-wrap gap-1.5 text-xs font-bold text-amber-900"></div>
             </div>
         </div>
-
-        <!-- المحتوى الرئيسي للتبويبات -->
-        <main class="flex-1 max-w-7xl w-full mx-auto p-4 space-y-6">
-
-            <!-- تبويب 1: سجل المخدومين -->
-            <div id="tab-makhdoom" class="tab-content active space-y-4">
                 <div class="bg-white rounded-3xl p-5 custom-shadow border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
                         <h2 class="text-lg font-black text-indigo-950">سجل وكروت المخدومين (<span id="total-makhdoom-count">0</span>)</h2>
