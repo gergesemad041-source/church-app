@@ -876,7 +876,7 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
             <h3 id="prep-modal-title" class="text-base font-black text-indigo-950">إعداد تحضير اليوم وفقرات الخدمة والمرفقات</h3>
             <input type="hidden" id="edit-prep-id">
             <div class="space-y-3 text-xs">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">عنوان اليوم / الموضوع:</label>
                         <input type="text" id="p-title" placeholder="مثال: يوم روحي عن الصوم" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold">
@@ -884,11 +884,15 @@ const mainDocRef = doc(db, "church_service_data", "master_state_v1");
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">طبيعة اليوم:</label>
                         <select id="p-type" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold">
-                            <option value="يوم خدمة متعدد الفقرات">يوم خدمة متعدد الفقرات ⛪</option>
-                            <option value="حفلة / مهرجان">حفلة / مهرجان 🎉</option>
-                            <option value="مؤتمر / يوم روحي">مؤتمر / يوم روحي 🕊️</option>
-                            <option value="درس فقط">درس فقط 📖</option>
+                            <option value="يوم خدمة متعدد الفقرات">📋 يوم خدمة متعدد الفقرات</option>
+                            <option value="حفلة / مهرجان">🎉 حفلة / مهرجان</option>
+                            <option value="مؤتمر / يوم روحي">🕊️ مؤتمر / يوم روحي</option>
+                            <option value="درس فقط">📖 درس فقط</option>
                         </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-indigo-900 mb-1">📅 تاريخ اليوم / التنفيذ:</label>
+                        <input type="date" id="p-date" class="w-full p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 font-bold text-indigo-950">
                     </div>
                 </div>
 
@@ -2036,6 +2040,7 @@ ${(m.whatsapp || m.phone) ? `<a href="https://wa.me/2${(m.whatsapp || m.phone).r
             document.getElementById('prep-modal-title').innerText = 'إضافة تحضير يوم خدمة جديد';
             document.getElementById('edit-prep-id').value = '';
             document.getElementById('p-title').value = '';
+            document.getElementById('p-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('p-notes').value = '';
             document.getElementById('p-links').value = '';
             document.getElementById('p-file-input').value = '';
@@ -2054,6 +2059,7 @@ ${(m.whatsapp || m.phone) ? `<a href="https://wa.me/2${(m.whatsapp || m.phone).r
             document.getElementById('edit-prep-id').value = p.id;
             document.getElementById('p-title').value = p.title || '';
             document.getElementById('p-type').value = p.type || 'يوم خدمة متعدد الفقرات';
+            document.getElementById('p-date').value = p.rawDate || '';
             document.getElementById('p-notes').value = p.notes || '';
             document.getElementById('p-links').value = p.links || '';
             const container = document.getElementById('prep-segments-container');
@@ -2102,7 +2108,8 @@ ${(m.whatsapp || m.phone) ? `<a href="https://wa.me/2${(m.whatsapp || m.phone).r
                     fileDataUrl: fileDataUrl || (existingIdx >= 0 ? window.appData.prep[existingIdx].fileDataUrl : null),
                     fileName: fileName || (existingIdx >= 0 ? window.appData.prep[existingIdx].fileName : null),
                     fileType: fileType || (existingIdx >= 0 ? window.appData.prep[existingIdx].fileType : null),
-                    date: existingIdx >= 0 ? window.appData.prep[existingIdx].date : formatEgyptianDate(new Date().toISOString().split('T')[0])
+                   rawDate: document.getElementById('p-date').value,
+date: document.getElementById('p-date').value ? formatEgyptianDate(document.getElementById('p-date').value) : (existingIdx >= 0 ? window.appData.prep[existingIdx].date : formatEgyptianDate(new Date().toISOString().split('T')[0]))
                 };
                 if (existingIdx >= 0) window.appData.prep[existingIdx] = obj;
                 else window.appData.prep.push(obj);
@@ -2143,7 +2150,7 @@ ${(m.whatsapp || m.phone) ? `<a href="https://wa.me/2${(m.whatsapp || m.phone).r
                                 <span class="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">${p.type}</span>
                                 <h3 class="font-black text-indigo-950 text-base mt-1">${p.title}</h3>
                             </div>
-                            <span class="text-[11px] text-slate-400 font-bold">${p.date || ''}</span>
+                           <span class="bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-xl text-[11px] font-extrabold flex items-center gap-1">📅 ${p.date || ''}</span>
                         </div>
                         ${(p.segments && p.segments.length > 0) ? `
                             <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1 text-xs">
